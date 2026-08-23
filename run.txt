@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# run
-binary=./target/release/cmsc-124-lab0-rust
-if [[ -f "$binary.exe" ]]; then
-  binary="$binary.exe"
-fi
-exec "$binary" "$@"
