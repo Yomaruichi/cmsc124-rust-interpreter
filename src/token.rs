@@ -1,0 +1,38 @@
+#[derive(Debug, Clone, PartialEq)]
+pub enum TokenType {
+    // Single-character tokens
+    L_PAREN,
+    R_PAREN,
+    L_CURLY,
+    R_CURLY,
+    COMMA,
+    SEMICOLON,
+    EQUAL,
+    NOT,
+    LESS,
+    GREATER,
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+    EOF,
+}
+
+#[derive(Debug, Clone)]
+pub struct Token {
+    pub token_type: TokenType,
+    pub lexeme: String,
+    pub literal: Option<String>,
+    pub line: usize,
+}
+
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let literal = self.literal.as_deref().unwrap_or("null");
+        write!(
+            f,
+            "Token(type={:?}, lexeme={}, literal={}, line={})",
+            self.token_type, self.lexeme, literal, self.line
+        )
+    }
+}
