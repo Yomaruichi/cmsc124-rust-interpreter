@@ -43,12 +43,19 @@ impl Scanner {
     }
     
     fn add_token(&mut self, token_type: TokenType) {
-        self.add_token_literal(token_type, None);
+        let text = self.source[self.start..self.current].iter().collect();
+        self.tokens.push(Token {
+            token_type: token_type,
+            lexeme: text,
+            literal: None,
+            line: self.line,
+        })
+
     }
 
     pub fn scan_token(&mut self) {
         // must advance input (pagawa advance function :>)
-        let input;
+        let input = self.advance();
 
         //also pagawa ng add_token function
         match input {
@@ -66,9 +73,9 @@ impl Scanner {
             '-' => self.add_token(TokenType::MINUS),
             '*' => self.add_token(TokenType::STAR),
             '/' => self.add_token(TokenType::SLASH),
-            ' ' | '\r' | '\t' => {}
+            ' ' | '\r' | '\t' => {},
             //also make error function :>
-            _ => self.error
+            _ => self.error(input)
         }
     }
 
