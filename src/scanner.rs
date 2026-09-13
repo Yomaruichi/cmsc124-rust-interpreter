@@ -74,6 +74,7 @@ impl Scanner {
             '*' => self.add_token(TokenType::STAR),
             '/' => self.add_token(TokenType::SLASH),
             ' ' | '\r' | '\t' => {},
+            '\n' => {self.line = self.line + 1}
             //also make error function :>
             _ => self.error(input)
         }
