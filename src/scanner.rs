@@ -36,6 +36,16 @@ impl Scanner {
         &self.tokens
     }
 
+    pub fn advance (&mut self) -> char {
+        let ch = self.source[self.current];
+        self.current += 1;
+        return ch;
+    }
+    
+    fn add_token(&mut self, token_type: TokenType) {
+        self.add_token_literal(token_type, None);
+    }
+
     pub fn scan_token(&mut self) {
         // must advance input (pagawa advance function :>)
         let input;
@@ -56,7 +66,7 @@ impl Scanner {
             '-' => self.add_token(TokenType::MINUS),
             '*' => self.add_token(TokenType::STAR),
             '/' => self.add_token(TokenType::SLASH),
-            ' ' => {}
+            ' ' | '\r' | '\t' => {}
             //also make error function :>
             _ => self.error
         }
@@ -64,5 +74,10 @@ impl Scanner {
 
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
+    }
+
+    fn error(&mut self, ch: char) {
+        eprintln!("[line {}] Error: Unexpected character '{}'", self.line, ch);
+        self.had_error = true;
     }
 }
