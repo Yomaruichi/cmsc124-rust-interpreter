@@ -59,10 +59,10 @@ impl Scanner {
 
         //also pagawa ng add_token function
         match input {
-            '(' => self.add_token(TokenType::L_PAREN),
-            ')' => self.add_token(TokenType::R_PAREN),
-            '{' => self.add_token(TokenType::L_CURLY),
-            '}' => self.add_token(TokenType::R_CURLY),
+            '(' => self.add_token(TokenType::LPAREN),
+            ')' => self.add_token(TokenType::RPAREN),
+            '{' => self.add_token(TokenType::LCURLY),
+            '}' => self.add_token(TokenType::RCURLY),
             ',' => self.add_token(TokenType::COMMA),
             ';' => self.add_token(TokenType::SEMICOLON),
             '=' => self.add_token(TokenType::EQUAL),

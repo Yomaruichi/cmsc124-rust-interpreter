@@ -1,10 +1,10 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     // Single-character tokens
-    L_PAREN,
-    R_PAREN,
-    L_CURLY,
-    R_CURLY,
+    LPAREN,
+    RPAREN,
+    LCURLY,
+    RCURLY,
     COMMA,
     SEMICOLON,
     EQUAL,
@@ -31,7 +31,7 @@ impl std::fmt::Display for Token {
         let literal = self.literal.as_deref().unwrap_or("null");
         write!(
             f,
-            "Token(type={:?}, lexeme={}, literal={}, line={})",
+            "Token(type= {:?}, lexeme= '{}', literal= {}, line= {})",
             self.token_type, self.lexeme, literal, self.line
         )
     }
