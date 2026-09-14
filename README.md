@@ -42,7 +42,23 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 
 | Keyword | Purpose |
 |---|---|
-| [word] | [what it does] |
+| `itakda` | Declares a variable. |
+| `tiyak` | Declares a constant value that cannot be changed. |
+| `gawa` | Declares a function. |
+| `kung` | Executes a block of code when a condition is true. |
+| `kundi` | Executes a block of code when the preceding condition is false. |
+| `habang` | Repeats a block of code while a condition is true. |
+| `tigil` | Stops the current loop. |
+| `ituloy` | Skips the current iteration of a loop and proceeds to the next one. |
+| `totoo` | Represents a true Boolean value. |
+| `mali` | Represents a false Boolean value. |
+| `wala` | A null value |
+| `uri` | Defines a data type. |
+| `isama` | Imports functionality from another module or file. |
+| `ipakita` | Displays output to the console, used for printing. |
+| `ipasok` | Reads input from the user. |
+| `piliin` | Multiple choices. |
+| `ibalik` | Returns a value from a function. |
 
 
 ### Operators
@@ -52,39 +68,56 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 |---|---|---|---|---|
 | [op] | [arithmetic, comparison, logical, assignment, other] | [unary or binary] | [left, right, none] | [1 = loosest] |
 
+| `=` | assignment | binary | right | 1 |
+| `||` | logical | binary | left | 2 |
+| `&&` | logical | binary | left | 3 |
+| `==` | comparison | binary | left | 4 |
+| `!=` | comparison | binary | left | 4 |
+| `<` | comparison | binary | left | 5 |
+| `>` | comparison | binary | left | 5 |
+| `<=` | comparison | binary | left | 5 |
+| `>=` | comparison | binary | left | 5 |
+| `+` | arithmetic | binary | left | 6 |
+| `-` | arithmetic | binary | left | 6 |
+| `*` | arithmetic | binary | left | 7 |
+| `/` | arithmetic | binary | left | 7 |
+| `%` | arithmetic | binary | left | 7 |
+| `!` | logical | unary | right | 8 |
+| `-` | arithmetic | unary | right | 8 |
+
 
 ### Literals
 
 
-| Kind | Syntax | Produces |
-|---|---|---|
-| [number] | [e.g. 42, 3.14] | [what runtime value] |
-| [string] | [e.g. "hello", escapes supported] | [what runtime value] |
-| [boolean] | [true, false] | [what runtime value] |
-| [nil] | [spelling] | [what runtime value] |
+  | Kind | Syntax | Produces |
+  |---|---|---|
+  | [number] | [e.g. 42, 3.14] | [An integer or floating-point number value.] |
+  | [string] | [e.g. "hello", escapes "\" supported] | [A string value containing a sequence of characters.] |
+  | [boolean] | [totoo, mali] | [A Boolean value representing true or false.] |
+  | [nil] | [wala] | [A nil value representing the absence of a value.] |
 
 
 ### Identifiers
 
 - Start characters: [which]
 - Continue characters: [which]
-- Case-sensitive: [yes or no]
+- Case-sensitive: [yes]
 - [Reserved patterns, length limits, or other restrictions.]
 
 ### Comments
 
-- Line comments: [token]
-- Block comments: [tokens, or "not supported"]
-- Nesting: [supported or not]
+- Line comments: [`//`]
+- Block comments: not supported
+- Nesting: not supported
 - [Harness note: comment_prefix in tests/lab*/manifest.json is set to the
   token above.]
 
 ## Whitespace and termination
 
-- Whitespace significant: [yes or no, and where]
+- Whitespace significant: [no, when declaring a variable, arithmetic operations]
 - Statement terminator: [e.g. semicolon, newline, none]
-- Block delimiters: [e.g. braces, indentation]
-- Grouping delimiters: [e.g. parentheses]
+- Block delimiters: [braces `{` and `}`]
+- Grouping delimiters: [parentheses `(` and `)`]
 
 ## Token output format
 

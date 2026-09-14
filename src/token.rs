@@ -16,6 +16,39 @@ pub enum TokenType {
     STAR,
     SLASH,
     EOF,
+
+    // double -character tokens
+    EQUAL_EQUAL,
+    NOT_EQUAL,
+    LESS_EQUAL,
+    GREATER_EQUAL,
+    AND,
+    OR,
+    
+
+    // literals
+    IDENTIFIER,
+    NUMBER,
+    STRING,
+
+    // keywords
+    LET,
+    CONST,
+    FN,
+    IF,
+    ELSE,
+    WHILE,
+    BREAK,
+    CONTINUE,
+    TRUE,
+    FALSE,
+    NULL,
+    TYPE,
+    IMPORT,
+    PRINT,
+    INPUT,
+    SWITCH,
+    RETURN,
 }
 
 #[derive(Debug, Clone)]
