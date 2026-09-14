@@ -1,4 +1,14 @@
+mod scanner;
+mod token;
+
+use scanner::Scanner;
+
 fn main() {
-    println!("Hello, world!");
-    println!("This is the start of our Rust Interpreter");
+    let source = "={}";
+    let mut scanner = Scanner::new_string(source);
+    let tokens = scanner.scan_tokens();
+
+    for token in tokens {
+        println!("{}", token);
+    }
 }
