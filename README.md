@@ -42,7 +42,26 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 
 | Keyword | Purpose |
 |---|---|
-| [word] | [what it does] |
+| `let` | Declares a variable. |
+| `const` | Declares a constant value that cannot be changed. |
+| `fn` | Declares a function. |
+| `if` | Executes a block of code when a condition is true. |
+| `else` | Executes a block of code when the preceding condition is false. |
+| `while` | Repeats a block of code while a condition is true. |
+| `for` | Repeats a block of code for each item in a sequence or range. |
+| `break` | Stops the current loop. |
+| `continue` | Skips the current iteration of a loop and proceeds to the next one. |
+| `true` | Represents a true Boolean value. |
+| `false` | Represents a false Boolean value. |
+| `null` | Represents the absence of a value. |
+| `type` | Defines a data type. |
+| `struct` | Defines a structure containing related data. |
+| `import` | Imports functionality from another module or file. |
+| `print` | Displays output to the console. |
+| `input` | Reads input from the user. |
+| `faint` | terminate/stop |
+| `switch` | multiple choices |
+| `return` | Returns a value from a function. |
 
 
 ### Operators
@@ -52,16 +71,33 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 |---|---|---|---|---|
 | [op] | [arithmetic, comparison, logical, assignment, other] | [unary or binary] | [left, right, none] | [1 = loosest] |
 
+| `=` | assignment | binary | right | 1 |
+| `||` | logical | binary | left | 2 |
+| `&&` | logical | binary | left | 3 |
+| `==` | comparison | binary | left | 4 |
+| `!=` | comparison | binary | left | 4 |
+| `<` | comparison | binary | left | 5 |
+| `>` | comparison | binary | left | 5 |
+| `<=` | comparison | binary | left | 5 |
+| `>=` | comparison | binary | left | 5 |
+| `+` | arithmetic | binary | left | 6 |
+| `-` | arithmetic | binary | left | 6 |
+| `*` | arithmetic | binary | left | 7 |
+| `/` | arithmetic | binary | left | 7 |
+| `%` | arithmetic | binary | left | 7 |
+| `!` | logical | unary | right | 8 |
+| `-` | arithmetic | unary | right | 8 |
+
 
 ### Literals
 
 
 | Kind | Syntax | Produces |
 |---|---|---|
-| [number] | [e.g. 42, 3.14] | [what runtime value] |
-| [string] | [e.g. "hello", escapes supported] | [what runtime value] |
-| [boolean] | [true, false] | [what runtime value] |
-| [nil] | [spelling] | [what runtime value] |
+| [number] | [e.g. 42, 3.14] | [An integer or floating-point number value.] |
+| [string] | [e.g. "hello", escapes "\" supported] | [A string value containing a sequence of characters.] |
+| [boolean] | [true, false] | [A Boolean value representing true or false.] |
+| [nil] | [void] | [A nil value representing the absence of a value.] |
 
 
 ### Identifiers
@@ -73,18 +109,18 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 
 ### Comments
 
-- Line comments: [token]
-- Block comments: [tokens, or "not supported"]
-- Nesting: [supported or not]
+- Line comments: [`//`]
+- Block comments: not supported
+- Nesting: not
 - [Harness note: comment_prefix in tests/lab*/manifest.json is set to the
   token above.]
 
 ## Whitespace and termination
 
-- Whitespace significant: [yes or no, and where]
+- Whitespace significant: [no, when declaring a variable, arithmetic operations]
 - Statement terminator: [e.g. semicolon, newline, none]
-- Block delimiters: [e.g. braces, indentation]
-- Grouping delimiters: [e.g. parentheses]
+- Block delimiters: [braces `{` and `}`]
+- Grouping delimiters: [parentheses `(` and `)`]
 
 ## Token output format
 
