@@ -21,6 +21,35 @@ impl Scanner {
         }
     }
 
+    fn string(&mut self) {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            eprintln!("[line {}] Error: Unterminated string.", self.line);
+            self.had_error = true;
+            return;
+        }
+
+        self.advance();
+
+        let value: String = self.source[self.start + 1..self.current - 1].iter().collect();
+        self.add_token_with_literal(TokenType::STRING, value);
+    }
+
+    fn number(&mut self) {
+        while self.peek().is_ascii_digit() {
+            self.advance();
+        }
+
+        let value: String = self.source[self.start..self.current].iter().collect();
+        self.add_token_with_literal(TokenType::NUMBER, value);
+    }
+
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
         while !self.is_at_end() {
             self.start = self.current;
@@ -41,6 +70,22 @@ impl Scanner {
         self.current += 1;
         return ch;
     }
+
+    fn match_char(&mut self, expected: char) -> bool {
+        if self.is_at_end() || self.source[self.current] != expected {
+            return false;
+        }
+        self.current += 1;
+        true
+    }
+
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            '\0'
+        } else {
+            self.source[self.current]
+        }
+    }
     
     fn add_token(&mut self, token_type: TokenType) {
         let text = self.source[self.start..self.current].iter().collect();
@@ -53,11 +98,19 @@ impl Scanner {
 
     }
 
+    fn add_token_with_literal(&mut self, token_type: TokenType, literal: String) {
+        let text = self.source[self.start..self.current].iter().collect();
+        self.tokens.push(Token {
+            token_type,
+            lexeme: text,
+            literal: Some(literal),
+            line: self.line,
+        })
+    }
+
     pub fn scan_token(&mut self) {
-        // must advance input (pagawa advance function :>)
         let input = self.advance();
 
-        //also pagawa ng add_token function
         match input {
             '(' => self.add_token(TokenType::LPAREN),
             ')' => self.add_token(TokenType::RPAREN),
@@ -65,17 +118,30 @@ impl Scanner {
             '}' => self.add_token(TokenType::RCURLY),
             ',' => self.add_token(TokenType::COMMA),
             ';' => self.add_token(TokenType::SEMICOLON),
-            '=' => self.add_token(TokenType::EQUAL),
-            '!' => self.add_token(TokenType::NOT),
-            '<' => self.add_token(TokenType::LESS),
-            '>' => self.add_token(TokenType::GREATER),
+            '=' => {
+                let t = if self.match_char('=') { TokenType::EQUALEQUAL } else { TokenType::EQUAL };
+                self.add_token(t);
+            }
+            '!' => {
+                let t = if self.match_char('=') { TokenType::NOTEQUAL } else { TokenType::NOT };
+                self.add_token(t);
+            }
+            '<' => {
+                let t = if self.match_char('=') { TokenType::LESSEQUAL } else { TokenType::LESS };
+                self.add_token(t);
+            }
+            '>' => {
+                let t = if self.match_char('=') { TokenType::GREATEREQUAL } else { TokenType::GREATER };
+                self.add_token(t);
+            }
             '+' => self.add_token(TokenType::PLUS),
             '-' => self.add_token(TokenType::MINUS),
             '*' => self.add_token(TokenType::STAR),
             '/' => self.add_token(TokenType::SLASH),
             ' ' | '\r' | '\t' => {},
             '\n' => {self.line = self.line + 1}
-            //also make error function :>
+            '"' => self.string(),
+            '0'..='9' => self.number(),
             _ => self.error(input)
         }
     }

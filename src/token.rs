@@ -18,10 +18,10 @@ pub enum TokenType {
     EOF,
 
     // double -character tokens
-    EQUAL_EQUAL,
-    NOT_EQUAL,
-    LESS_EQUAL,
-    GREATER_EQUAL,
+    EQUALEQUAL,
+    NOTEQUAL,
+    LESSEQUAL,
+    GREATEREQUAL,
     AND,
     OR,
     
