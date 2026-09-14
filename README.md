@@ -42,26 +42,23 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 
 | Keyword | Purpose |
 |---|---|
-| `let` | Declares a variable. |
-| `const` | Declares a constant value that cannot be changed. |
-| `fn` | Declares a function. |
-| `if` | Executes a block of code when a condition is true. |
-| `else` | Executes a block of code when the preceding condition is false. |
-| `while` | Repeats a block of code while a condition is true. |
-| `for` | Repeats a block of code for each item in a sequence or range. |
-| `break` | Stops the current loop. |
-| `continue` | Skips the current iteration of a loop and proceeds to the next one. |
-| `true` | Represents a true Boolean value. |
-| `false` | Represents a false Boolean value. |
-| `null` | Represents the absence of a value. |
-| `type` | Defines a data type. |
-| `struct` | Defines a structure containing related data. |
-| `import` | Imports functionality from another module or file. |
-| `print` | Displays output to the console. |
-| `input` | Reads input from the user. |
-| `faint` | terminate/stop |
-| `switch` | multiple choices |
-| `return` | Returns a value from a function. |
+| `itakda` | Declares a variable. |
+| `tiyak` | Declares a constant value that cannot be changed. |
+| `gawa` | Declares a function. |
+| `kung` | Executes a block of code when a condition is true. |
+| `kundi` | Executes a block of code when the preceding condition is false. |
+| `habang` | Repeats a block of code while a condition is true. |
+| `tigil` | Stops the current loop. |
+| `ituloy` | Skips the current iteration of a loop and proceeds to the next one. |
+| `totoo` | Represents a true Boolean value. |
+| `mali` | Represents a false Boolean value. |
+| `wala` | A null value |
+| `uri` | Defines a data type. |
+| `isama` | Imports functionality from another module or file. |
+| `ipakita` | Displays output to the console, used for printing. |
+| `ipasok` | Reads input from the user. |
+| `piliin` | Multiple choices. |
+| `ibalik` | Returns a value from a function. |
 
 
 ### Operators
@@ -92,26 +89,26 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 ### Literals
 
 
-| Kind | Syntax | Produces |
-|---|---|---|
-| [number] | [e.g. 42, 3.14] | [An integer or floating-point number value.] |
-| [string] | [e.g. "hello", escapes "\" supported] | [A string value containing a sequence of characters.] |
-| [boolean] | [true, false] | [A Boolean value representing true or false.] |
-| [nil] | [void] | [A nil value representing the absence of a value.] |
+  | Kind | Syntax | Produces |
+  |---|---|---|
+  | [number] | [e.g. 42, 3.14] | [An integer or floating-point number value.] |
+  | [string] | [e.g. "hello", escapes "\" supported] | [A string value containing a sequence of characters.] |
+  | [boolean] | [totoo, mali] | [A Boolean value representing true or false.] |
+  | [nil] | [wala] | [A nil value representing the absence of a value.] |
 
 
 ### Identifiers
 
 - Start characters: [which]
 - Continue characters: [which]
-- Case-sensitive: [yes or no]
+- Case-sensitive: [yes]
 - [Reserved patterns, length limits, or other restrictions.]
 
 ### Comments
 
 - Line comments: [`//`]
 - Block comments: not supported
-- Nesting: not
+- Nesting: not supported
 - [Harness note: comment_prefix in tests/lab*/manifest.json is set to the
   token above.]
 
