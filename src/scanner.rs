@@ -108,6 +108,16 @@ impl Scanner {
         })
     }
 
+    fn identifier(&mut self) {
+        while self.peek().is_alphanumeric() || self.peek() == '_' {
+            self.advance();
+        }
+
+        let text: String = self.source[self.start..self.current].iter().collect();
+        let token_type = Scanner::keyword_lookup(&text).unwrap_or(TokenType::IDENTIFIER);
+        self.add_token(token_type);
+    }
+
     pub fn scan_token(&mut self) {
         let input = self.advance();
 
@@ -142,7 +152,36 @@ impl Scanner {
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
             '0'..='9' => self.number(),
+            c if c.is_alphanumeric() || c == '_' => self.identifier(),
             _ => self.error(input)
+        }
+    }
+
+    fn keyword_lookup(text: &str) -> Option<TokenType> {
+        match text {
+            "func"  => Some(TokenType::FUNC),
+            "const" => Some(TokenType::CONST),
+            "let"   => Some(TokenType::LET),
+            "if"    => Some(TokenType::IF),
+            "else"  => Some(TokenType::ELSE),
+            "while" => Some(TokenType::WHILE),
+            "do"    => Some(TokenType::DO),
+            "for"   => Some(TokenType::FOR),
+            "and"   => Some(TokenType::AND),
+            "or"    => Some(TokenType::OR),
+            "break" => Some(TokenType::BREAK),
+            "continue" => Some(TokenType::CONTINUE),
+            "true"  => Some(TokenType::TRUE),
+            "false" => Some(TokenType::FALSE),
+            "none"  => Some(TokenType::NONE),
+            "import"=> Some(TokenType::IMPORT),
+            "print" => Some(TokenType::PRINT),
+            "input" => Some(TokenType::INPUT),
+            "switch"=> Some(TokenType::SWITCH),
+            "case"  => Some(TokenType::CASE),
+            "default"=> Some(TokenType::DEFAULT),
+            "return"=> Some(TokenType::RETURN),
+            _ => None
         }
     }
 
@@ -154,4 +193,6 @@ impl Scanner {
         eprintln!("[line {}] Error: Unexpected character '{}'", self.line, ch);
         self.had_error = true;
     }
+
+
 }

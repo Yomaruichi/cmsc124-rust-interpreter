@@ -67,7 +67,6 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 | Operator | Category | Operands | Associativity | Precedence |
 |---|---|---|---|---|
 | [op] | [arithmetic, comparison, logical, assignment, other] | [unary or binary] | [left, right, none] | [1 = loosest] |
-
 | `=` | assignment | binary | right | 1 |
 | `||` | logical | binary | left | 2 |
 | `&&` | logical | binary | left | 3 |
