@@ -22,14 +22,11 @@ impl Scanner {
     }
 
     fn string(&mut self) {
-        while self.peek() != '"' && !self.is_at_end() {
-            if self.peek() == '\n' {
-                self.line += 1;
-            }
+        while self.peek() != '"' && !self.is_at_end() && self.peek() != '\n' {
             self.advance();
         }
 
-        if self.is_at_end() {
+        if self.peek() != '"' {
             eprintln!("[line {}] Error: Unterminated string.", self.line);
             self.had_error = true;
             return;
