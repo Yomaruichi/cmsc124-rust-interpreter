@@ -35,6 +35,7 @@ pub enum TokenType {
     LET,
     CONST,
     FUNC,
+    TYPE,
     IF,
     ELSE,
     FOR,

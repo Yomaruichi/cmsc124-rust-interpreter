@@ -181,6 +181,7 @@ impl Scanner {
         match text {
             "gawa"  => Some(TokenType::FUNC),
             "tiyak" => Some(TokenType::CONST),
+            "uri"=> Some(TokenType::TYPE),
             "itakda"   => Some(TokenType::LET),
             "kung"    => Some(TokenType::IF),
             "kundi"  => Some(TokenType::ELSE),
