@@ -46,8 +46,15 @@ impl Scanner {
             self.advance();
         }
 
-        let value: String = self.source[self.start..self.current].iter().collect();
-        self.add_token_with_literal(TokenType::NUMBER, value);
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
+            self.advance();
+            while self.peek().is_ascii_digit() {
+                self.advance();
+            }
+        }
+
+        let text: String = self.source[self.start..self.current].iter().collect();
+        self.add_token_with_literal(TokenType::NUMBER, text);
     }
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
@@ -84,6 +91,14 @@ impl Scanner {
             '\0'
         } else {
             self.source[self.current]
+        }
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            '\0'
+        } else {
+            self.source[self.current + 1]
         }
     }
     
@@ -147,7 +162,15 @@ impl Scanner {
             '+' => self.add_token(TokenType::PLUS),
             '-' => self.add_token(TokenType::MINUS),
             '*' => self.add_token(TokenType::STAR),
-            '/' => self.add_token(TokenType::SLASH),
+            '/' => {
+                        if self.match_char('/') {
+                            self.line_comment();
+                        } else if self.match_char('*') {
+                            self.block_comment();
+                        } else {
+                            self.add_token(TokenType::SLASH);
+                        }
+                    },
             ' ' | '\r' | '\t' => {},
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
@@ -193,6 +216,44 @@ impl Scanner {
         eprintln!("[line {}] Error: Unexpected character '{}'", self.line, ch);
         self.had_error = true;
     }
+
+    fn line_comment(&mut self) {
+        while self.peek() != '\n' && !self.is_at_end() {
+            self.advance();
+        }
+    }
+
+    fn block_comment(&mut self) {
+    let mut depth = 1;
+
+    while depth > 0 {
+        if self.is_at_end() {
+            eprintln!("[line {}] Error: Unterminated block comment.", self.line);
+            self.had_error = true;
+            return;
+        }
+
+        if self.peek() == '\n' {
+            self.line += 1;
+        }
+
+        if self.peek() == '/' && self.peek_next() == '*' {
+            self.advance(); // consume '/'
+            self.advance(); // consume '*'
+            depth += 1;
+            continue;
+        }
+
+        if self.peek() == '*' && self.peek_next() == '/' {
+            self.advance(); // consume '*'
+            self.advance(); // consume '/'
+            depth -= 1;
+            continue;
+        }
+
+        self.advance();
+    }
+}
 
 
 }
