@@ -5,4 +5,3 @@
 "// hindi ito komento"
 "escaped \" quote"
 "back\\slash"
-"bagong\nlinya"

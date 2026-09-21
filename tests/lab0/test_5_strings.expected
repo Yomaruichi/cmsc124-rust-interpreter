@@ -1,0 +1,7 @@
+Token(type= STRING, lexeme= '"hello"', literal= hello, line= 1)
+Token(type= STRING, lexeme= '""', literal= , line= 2)
+Token(type= STRING, lexeme= '"may bola sa loob"', literal= may bola sa loob, line= 3)
+Token(type= STRING, lexeme= '"kung itakda totoo"', literal= kung itakda totoo, line= 4)
+Token(type= STRING, lexeme= '"// hindi ito komento"', literal= // hindi ito komento, line= 5)
+Token(type= STRING, lexeme= '"escaped \" quote"', literal= escaped \ quote, line= 4)
+Token(type= STRING, lexeme= '"back\\slash"', literal= back\slash, line= 4)
