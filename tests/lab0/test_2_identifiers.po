@@ -1,4 +1,3 @@
-// ITAKDA and Kung are not keywords, so they must be identifiers here
 x
 edad
 _pangalan
