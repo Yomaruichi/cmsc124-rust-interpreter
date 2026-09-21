@@ -33,7 +33,7 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 
 ## File extension
 
-`.src`
+`.po`
 
 ## Lexical structure
 
@@ -48,6 +48,10 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 | `kung` | Executes a block of code when a condition is true. |
 | `kundi` | Executes a block of code when the preceding condition is false. |
 | `habang` | Repeats a block of code while a condition is true. |
+| `gawin` | Instructs the program to execute a block of code before evaluating conditions |
+| `tuwing` | Repeat a block of code a predetermined number of times |
+| `at` | Evaluates two or more condition and returns true when all conditions are met |
+| `Okaya` | Evaluates two or more condition and returns true when at least one condition is met |
 | `tigil` | Stops the current loop. |
 | `ituloy` | Skips the current iteration of a loop and proceeds to the next one. |
 | `totoo` | Represents a true Boolean value. |
@@ -57,7 +61,9 @@ Exit codes: 0 [when], 65 [when], 70 [when].
 | `isama` | Imports functionality from another module or file. |
 | `ipakita` | Displays output to the console, used for printing. |
 | `ipasok` | Reads input from the user. |
-| `piliin` | Multiple choices. |
+| `piliin` | Compares values against multiple options |
+| `kapag` | An option |
+| `edi` | Default option |
 | `ibalik` | Returns a value from a function. |
 
 

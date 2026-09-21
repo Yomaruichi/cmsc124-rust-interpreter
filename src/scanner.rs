@@ -22,14 +22,11 @@ impl Scanner {
     }
 
     fn string(&mut self) {
-        while self.peek() != '"' && !self.is_at_end() {
-            if self.peek() == '\n' {
-                self.line += 1;
-            }
+        while self.peek() != '"' && !self.is_at_end() && self.peek() != '\n' {
             self.advance();
         }
 
-        if self.is_at_end() {
+        if self.peek() != '"' {
             eprintln!("[line {}] Error: Unterminated string.", self.line);
             self.had_error = true;
             return;
@@ -46,8 +43,15 @@ impl Scanner {
             self.advance();
         }
 
-        let value: String = self.source[self.start..self.current].iter().collect();
-        self.add_token_with_literal(TokenType::NUMBER, value);
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
+            self.advance();
+            while self.peek().is_ascii_digit() {
+                self.advance();
+            }
+        }
+
+        let text: String = self.source[self.start..self.current].iter().collect();
+        self.add_token_with_literal(TokenType::NUMBER, text);
     }
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
@@ -84,6 +88,14 @@ impl Scanner {
             '\0'
         } else {
             self.source[self.current]
+        }
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            '\0'
+        } else {
+            self.source[self.current + 1]
         }
     }
     
@@ -147,7 +159,15 @@ impl Scanner {
             '+' => self.add_token(TokenType::PLUS),
             '-' => self.add_token(TokenType::MINUS),
             '*' => self.add_token(TokenType::STAR),
-            '/' => self.add_token(TokenType::SLASH),
+            '/' => {
+                        if self.match_char('/') {
+                            self.line_comment();
+                        } else if self.match_char('*') {
+                            self.block_comment();
+                        } else {
+                            self.add_token(TokenType::SLASH);
+                        }
+                    },
             ' ' | '\r' | '\t' => {},
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
@@ -159,28 +179,28 @@ impl Scanner {
 
     fn keyword_lookup(text: &str) -> Option<TokenType> {
         match text {
-            "func"  => Some(TokenType::FUNC),
-            "const" => Some(TokenType::CONST),
-            "let"   => Some(TokenType::LET),
-            "if"    => Some(TokenType::IF),
-            "else"  => Some(TokenType::ELSE),
-            "while" => Some(TokenType::WHILE),
-            "do"    => Some(TokenType::DO),
-            "for"   => Some(TokenType::FOR),
-            "and"   => Some(TokenType::AND),
-            "or"    => Some(TokenType::OR),
-            "break" => Some(TokenType::BREAK),
-            "continue" => Some(TokenType::CONTINUE),
-            "true"  => Some(TokenType::TRUE),
-            "false" => Some(TokenType::FALSE),
-            "none"  => Some(TokenType::NONE),
-            "import"=> Some(TokenType::IMPORT),
-            "print" => Some(TokenType::PRINT),
-            "input" => Some(TokenType::INPUT),
-            "switch"=> Some(TokenType::SWITCH),
-            "case"  => Some(TokenType::CASE),
-            "default"=> Some(TokenType::DEFAULT),
-            "return"=> Some(TokenType::RETURN),
+            "gawa"  => Some(TokenType::FUNC),
+            "tiyak" => Some(TokenType::CONST),
+            "itakda"   => Some(TokenType::LET),
+            "kung"    => Some(TokenType::IF),
+            "kundi"  => Some(TokenType::ELSE),
+            "habang" => Some(TokenType::WHILE),
+            "gawin"    => Some(TokenType::DO),
+            "tuwing"   => Some(TokenType::FOR),
+            "at"   => Some(TokenType::AND),
+            "okaya"    => Some(TokenType::OR),
+            "tigil" => Some(TokenType::BREAK),
+            "ituloy" => Some(TokenType::CONTINUE),
+            "totoo"  => Some(TokenType::TRUE),
+            "mali" => Some(TokenType::FALSE),
+            "wala"  => Some(TokenType::NONE),
+            "isama"=> Some(TokenType::IMPORT),
+            "ipakita" => Some(TokenType::PRINT),
+            "ipasok" => Some(TokenType::INPUT),
+            "piliin"=> Some(TokenType::SWITCH),
+            "kapag"  => Some(TokenType::CASE),
+            "edi"=> Some(TokenType::DEFAULT),
+            "ibalik"=> Some(TokenType::RETURN),
             _ => None
         }
     }
@@ -193,6 +213,44 @@ impl Scanner {
         eprintln!("[line {}] Error: Unexpected character '{}'", self.line, ch);
         self.had_error = true;
     }
+
+    fn line_comment(&mut self) {
+        while self.peek() != '\n' && !self.is_at_end() {
+            self.advance();
+        }
+    }
+
+    fn block_comment(&mut self) {
+    let mut depth = 1;
+
+    while depth > 0 {
+        if self.is_at_end() {
+            eprintln!("[line {}] Error: Unterminated block comment.", self.line);
+            self.had_error = true;
+            return;
+        }
+
+        if self.peek() == '\n' {
+            self.line += 1;
+        }
+
+        if self.peek() == '/' && self.peek_next() == '*' {
+            self.advance(); // consume '/'
+            self.advance(); // consume '*'
+            depth += 1;
+            continue;
+        }
+
+        if self.peek() == '*' && self.peek_next() == '/' {
+            self.advance(); // consume '*'
+            self.advance(); // consume '/'
+            depth -= 1;
+            continue;
+        }
+
+        self.advance();
+    }
+}
 
 
 }
