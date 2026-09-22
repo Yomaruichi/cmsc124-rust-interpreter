@@ -1,0 +1,7 @@
+"hello"
+""
+"may bola sa loob"
+"kung itakda totoo"
+"// hindi ito komento"
+"escaped \" quote"
+"back\\slash"
