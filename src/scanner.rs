@@ -22,8 +22,33 @@ impl Scanner {
     }
 
     fn string(&mut self) {
+        let mut value = String::new();
+
         while self.peek() != '"' && !self.is_at_end() && self.peek() != '\n' {
-            self.advance();
+            if self.peek() == '\\' {
+                self.advance();
+
+                if self.is_at_end() || self.peek() == '\n' {
+                    break;
+                }
+
+                let escaped = self.advance();
+                match escaped {
+                    'n' => value.push('\n'),
+                    '"' => value.push('"'),
+                    '\\' => value.push('\\'),
+                    other => {
+                        eprintln!(
+                            "[line {}] Error: Invalid escape sequence '\\{}'.",
+                            self.line, other
+                        );
+                        self.had_error = true;
+                        value.push(other);
+                    }
+                }
+            } else {
+                value.push(self.advance());
+            }
         }
 
         if self.peek() != '"' {
@@ -34,7 +59,6 @@ impl Scanner {
 
         self.advance();
 
-        let value: String = self.source[self.start + 1..self.current - 1].iter().collect();
         self.add_token_with_literal(TokenType::STRING, value);
     }
 
@@ -181,7 +205,6 @@ impl Scanner {
         match text {
             "gawa"  => Some(TokenType::FUNC),
             "tiyak" => Some(TokenType::CONST),
-            "uri"=> Some(TokenType::TYPE),
             "itakda"   => Some(TokenType::LET),
             "kung"    => Some(TokenType::IF),
             "kundi"  => Some(TokenType::ELSE),
