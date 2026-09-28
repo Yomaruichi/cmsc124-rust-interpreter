@@ -1,2 +1,0 @@
-Token(type= IDENTIFIER, lexeme= 'hi', literal= null, line= 2)
-Token(type= EOF, lexeme= '', literal= null, line= 2)

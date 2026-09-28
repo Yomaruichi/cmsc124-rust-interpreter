@@ -1,0 +1,2 @@
+Token(type= STRING, lexeme= '"// hindi ito komento"', literal= // hindi ito komento, line= 1)
+Token(type= EOF, lexeme= '', literal= null, line= 1)
