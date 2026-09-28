@@ -50,10 +50,12 @@ impl Scanner {
             }
         }
 
-        self.report(self.line, "Unterminated string. Strings must end on the same line.");
+        if self.peek() != '"' {
+            self.report(self.line, "Unterminated string. Strings must end on the same line.");
+            return;
+        }
 
         self.advance();
-
         self.add_token_with_literal(TokenType::STRING, Value::String(value));
     }
 
