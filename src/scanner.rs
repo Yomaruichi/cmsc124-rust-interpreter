@@ -80,7 +80,6 @@ impl Scanner {
         }
 
         if self.peek() == '.' && !self.peek_next().is_ascii_digit() {
-            self.report(self.line, "A decimal point must be followed by a digit.");
             self.advance();
         }
 
@@ -221,6 +220,13 @@ impl Scanner {
             ' ' | '\r' | '\t' => {},
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
+            '.' => {
+                    if self.peek().is_ascii_digit() {
+                        self.leading_decimal_number();
+                    } else {
+                        self.unexpected_char(input);
+                    }
+                }
             '0'..='9' => self.number(),
             c if c.is_alphanumeric() || c == '_' => self.identifier(),
             _ => self.unexpected_char(input)
@@ -319,5 +325,16 @@ impl Scanner {
     }
 }
 
+// Helper to scan numbers that start with a leading dot like .5
+fn leading_decimal_number(&mut self) {
+    // Consume all digits following the '.'
+    while self.peek().is_ascii_digit() {
+        self.advance();
+    }
+
+    let text: String = self.source[self.start..self.current].iter().collect();
+    let value: f64 = text.parse().unwrap_or(0.0);
+    self.add_token_with_literal(TokenType::NUMBER, Value::Number(value));
+}
 
 }
