@@ -1,3 +1,3 @@
-Token(type= IF, lexeme= 'kung', literal= null, line= 1)
+Token(type= KUNG, lexeme= 'kung', literal= null, line= 1)
 Token(type= LPAREN, lexeme= '(', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

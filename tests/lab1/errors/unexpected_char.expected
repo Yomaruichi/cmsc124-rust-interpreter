@@ -1,0 +1,6 @@
+Token(type= ITAKDA, lexeme= 'itakda', literal= null, line= 1)
+Token(type= IDENTIFIER, lexeme= 'x', literal= null, line= 1)
+Token(type= EQUAL, lexeme= '=', literal= null, line= 1)
+Token(type= NUMBER, lexeme= '10', literal= 10.0, line= 1)
+Token(type= SEMICOLON, lexeme= ';', literal= null, line= 1)
+Token(type= EOF, lexeme= '', literal= null, line= 1)

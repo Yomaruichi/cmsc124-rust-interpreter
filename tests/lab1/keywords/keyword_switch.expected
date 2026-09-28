@@ -1,2 +1,2 @@
-Token(type= SWITCH, lexeme= 'piliin', literal= null, line= 1)
+Token(type= PILIIN, lexeme= 'piliin', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

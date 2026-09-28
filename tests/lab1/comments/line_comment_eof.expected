@@ -1,0 +1,3 @@
+Token(type= IPAKITA, lexeme= 'ipakita', literal= null, line= 1)
+Token(type= IDENTIFIER, lexeme= 'x', literal= null, line= 1)
+Token(type= EOF, lexeme= '', literal= null, line= 1)

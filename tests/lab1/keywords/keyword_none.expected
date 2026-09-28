@@ -1,2 +1,2 @@
-Token(type= NONE, lexeme= 'wala', literal= nil, line= 1)
+Token(type= WALA, lexeme= 'wala', literal= nil, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

@@ -1,0 +1,4 @@
+Token(type= IPAKITA, lexeme= 'ipakita', literal= null, line= 2)
+Token(type= IDENTIFIER, lexeme= 'x', literal= null, line= 2)
+Token(type= SEMICOLON, lexeme= ';', literal= null, line= 2)
+Token(type= EOF, lexeme= '', literal= null, line= 2)

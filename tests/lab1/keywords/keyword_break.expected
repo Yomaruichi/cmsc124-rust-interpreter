@@ -1,2 +1,2 @@
-Token(type= BREAK, lexeme= 'tigil', literal= null, line= 1)
+Token(type= TIGIL, lexeme= 'tigil', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

@@ -1,2 +1,2 @@
-Token(type= FALSE, lexeme= 'mali', literal= false, line= 1)
+Token(type= MALI, lexeme= 'mali', literal= false, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)
