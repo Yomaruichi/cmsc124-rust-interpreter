@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType};
+use crate::token::{Token, TokenType, Value};
 
 pub struct Scanner {
     source: Vec<char>,
@@ -22,20 +22,41 @@ impl Scanner {
     }
 
     fn string(&mut self) {
+        let mut value = String::new();
+
         while self.peek() != '"' && !self.is_at_end() && self.peek() != '\n' {
-            self.advance();
+            if self.peek() == '\\' {
+                self.advance();
+
+                if self.is_at_end() || self.peek() == '\n' {
+                    break;
+                }
+
+                let escaped = self.advance();
+                match escaped {
+                    'n' => value.push('\n'),
+                    '"' => value.push('"'),
+                    '\\' => value.push('\\'),
+                    other => {
+                        self.report(
+                            self.line,
+                            &format!("Invalid escape sequence '\\{}'. Supported: \\n, \\\", \\\\.", other),
+                        );
+                        value.push(other);
+                    }
+                }
+            } else {
+                value.push(self.advance());
+            }
         }
 
         if self.peek() != '"' {
-            eprintln!("[line {}] Error: Unterminated string.", self.line);
-            self.had_error = true;
+            self.report(self.line, "Unterminated string. Strings must end on the same line.");
             return;
         }
 
         self.advance();
-
-        let value: String = self.source[self.start + 1..self.current - 1].iter().collect();
-        self.add_token_with_literal(TokenType::STRING, value);
+        self.add_token_with_literal(TokenType::STRING, Value::String(value));
     }
 
     fn number(&mut self) {
@@ -50,8 +71,14 @@ impl Scanner {
             }
         }
 
+        if self.peek() == '.' && !self.peek_next().is_ascii_digit() {
+            self.report(self.line, "A decimal point must be followed by a digit.");
+            self.advance();
+        }
+
         let text: String = self.source[self.start..self.current].iter().collect();
-        self.add_token_with_literal(TokenType::NUMBER, text);
+        let value: f64 = text.parse().expect("scanned digits always form a valid f64");
+        self.add_token_with_literal(TokenType::NUMBER, Value::Number(value));
     }
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
@@ -110,7 +137,7 @@ impl Scanner {
 
     }
 
-    fn add_token_with_literal(&mut self, token_type: TokenType, literal: String) {
+    fn add_token_with_literal(&mut self, token_type: TokenType, literal: Value) {
         let text = self.source[self.start..self.current].iter().collect();
         self.tokens.push(Token {
             token_type,
@@ -127,7 +154,13 @@ impl Scanner {
 
         let text: String = self.source[self.start..self.current].iter().collect();
         let token_type = Scanner::keyword_lookup(&text).unwrap_or(TokenType::IDENTIFIER);
-        self.add_token(token_type);
+
+        match token_type {
+            TokenType::TOTOO => self.add_token_with_literal(token_type, Value::Boolean(true)),
+            TokenType::MALI => self.add_token_with_literal(token_type, Value::Boolean(false)),
+            TokenType::WALA => self.add_token_with_literal(token_type, Value::Nil),
+            _ => self.add_token(token_type),
+        }
     }
 
     pub fn scan_token(&mut self) {
@@ -168,40 +201,41 @@ impl Scanner {
                             self.add_token(TokenType::SLASH);
                         }
                     },
+            '%' => self.add_token(TokenType::MODULO),
             ' ' | '\r' | '\t' => {},
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
             '0'..='9' => self.number(),
             c if c.is_alphanumeric() || c == '_' => self.identifier(),
-            _ => self.error(input)
+            _ => self.unexpected_char(input)
         }
     }
 
     fn keyword_lookup(text: &str) -> Option<TokenType> {
         match text {
-            "gawa"  => Some(TokenType::FUNC),
-            "tiyak" => Some(TokenType::CONST),
-            "uri"=> Some(TokenType::TYPE),
-            "itakda"   => Some(TokenType::LET),
-            "kung"    => Some(TokenType::IF),
-            "kundi"  => Some(TokenType::ELSE),
-            "habang" => Some(TokenType::WHILE),
-            "gawin"    => Some(TokenType::DO),
-            "tuwing"   => Some(TokenType::FOR),
-            "at"   => Some(TokenType::AND),
-            "okaya"    => Some(TokenType::OR),
-            "tigil" => Some(TokenType::BREAK),
-            "ituloy" => Some(TokenType::CONTINUE),
-            "totoo"  => Some(TokenType::TRUE),
-            "mali" => Some(TokenType::FALSE),
-            "wala"  => Some(TokenType::NONE),
-            "isama"=> Some(TokenType::IMPORT),
-            "ipakita" => Some(TokenType::PRINT),
-            "ipasok" => Some(TokenType::INPUT),
-            "piliin"=> Some(TokenType::SWITCH),
-            "kapag"  => Some(TokenType::CASE),
-            "edi"=> Some(TokenType::DEFAULT),
-            "ibalik"=> Some(TokenType::RETURN),
+            "gawa"  => Some(TokenType::GAWA),
+            "uri"   => Some(TokenType::URI),
+            "tiyak" => Some(TokenType::TIYAK),
+            "itakda"   => Some(TokenType::ITAKDA),
+            "kung"    => Some(TokenType::KUNG),
+            "kundi"  => Some(TokenType::KUNDI),
+            "habang" => Some(TokenType::HABANG),
+            "gawin"    => Some(TokenType::GAWIN),
+            "tuwing"   => Some(TokenType::TUWING),
+            "at"   => Some(TokenType::AT),
+            "okaya"    => Some(TokenType::OKAYA),
+            "tigil" => Some(TokenType::TIGIL),
+            "ituloy" => Some(TokenType::ITULOY),
+            "totoo"  => Some(TokenType::TOTOO),
+            "mali" => Some(TokenType::MALI),
+            "wala"  => Some(TokenType::WALA),
+            "isama"=> Some(TokenType::ISAMA),
+            "ipakita" => Some(TokenType::IPAKITA),
+            "ipasok" => Some(TokenType::IPASOK),
+            "piliin"=> Some(TokenType::PILIIN),
+            "kapag"  => Some(TokenType::KAPAG),
+            "edi"=> Some(TokenType::EDI),
+            "ibalik"=> Some(TokenType::IBALIK),
             _ => None
         }
     }
@@ -210,9 +244,19 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    fn error(&mut self, ch: char) {
-        eprintln!("[line {}] Error: Unexpected character '{}'", self.line, ch);
+    fn report(&mut self, line: usize, message: &str) {
+        eprintln!("[line {}] Error: {}", line, message);
         self.had_error = true;
+    }
+
+    fn unexpected_char(&mut self, ch: char) {
+        let message = match ch {
+            '&' => "Unexpected character '&'. Use 'at' for logical and.".to_string(),
+            '|' => "Unexpected character '|'. Use 'okaya' for logical or.".to_string(),
+            '.' if self.peek().is_ascii_digit() => "Unexpected character '.'. A decimal needs a digit before the point: write 0.5, not .5.".to_string(),
+            _ => format!("Unexpected character '{}'.", ch),
+        };
+        self.report(self.line, &message);
     }
 
     fn line_comment(&mut self) {
@@ -222,12 +266,12 @@ impl Scanner {
     }
 
     fn block_comment(&mut self) {
+    let start_line = self.line;
     let mut depth = 1;
 
     while depth > 0 {
         if self.is_at_end() {
-            eprintln!("[line {}] Error: Unterminated block comment.", self.line);
-            self.had_error = true;
+            self.report(start_line, "Unterminated block comment.");
             return;
         }
 
