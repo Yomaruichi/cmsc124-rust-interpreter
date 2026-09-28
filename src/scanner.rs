@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType};
+use crate::token::{Token, TokenType, Value};
 
 pub struct Scanner {
     source: Vec<char>,
@@ -59,7 +59,7 @@ impl Scanner {
 
         self.advance();
 
-        self.add_token_with_literal(TokenType::STRING, value);
+        self.add_token_with_literal(TokenType::STRING, Value::String(value));
     }
 
     fn number(&mut self) {
@@ -75,7 +75,8 @@ impl Scanner {
         }
 
         let text: String = self.source[self.start..self.current].iter().collect();
-        self.add_token_with_literal(TokenType::NUMBER, text);
+        let value: f64 = text.parse().expect("scanned digits always form a valid f64");
+        self.add_token_with_literal(TokenType::NUMBER, Value::Number(value));
     }
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
@@ -134,7 +135,7 @@ impl Scanner {
 
     }
 
-    fn add_token_with_literal(&mut self, token_type: TokenType, literal: String) {
+    fn add_token_with_literal(&mut self, token_type: TokenType, literal: Value) {
         let text = self.source[self.start..self.current].iter().collect();
         self.tokens.push(Token {
             token_type,
@@ -151,7 +152,13 @@ impl Scanner {
 
         let text: String = self.source[self.start..self.current].iter().collect();
         let token_type = Scanner::keyword_lookup(&text).unwrap_or(TokenType::IDENTIFIER);
-        self.add_token(token_type);
+
+        match token_type {
+            TokenType::TOTOO => self.add_token_with_literal(token_type, Value::Boolean(true)),
+            TokenType::MALI => self.add_token_with_literal(token_type, Value::Boolean(false)),
+            TokenType::WALA => self.add_token_with_literal(token_type, Value::Nil),
+            _ => self.add_token(token_type),
+        }
     }
 
     pub fn scan_token(&mut self) {
@@ -192,6 +199,7 @@ impl Scanner {
                             self.add_token(TokenType::SLASH);
                         }
                     },
+            '%' => self.add_token(TokenType::MODULO),
             ' ' | '\r' | '\t' => {},
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
@@ -203,28 +211,29 @@ impl Scanner {
 
     fn keyword_lookup(text: &str) -> Option<TokenType> {
         match text {
-            "gawa"  => Some(TokenType::FUNC),
-            "tiyak" => Some(TokenType::CONST),
-            "itakda"   => Some(TokenType::LET),
-            "kung"    => Some(TokenType::IF),
-            "kundi"  => Some(TokenType::ELSE),
-            "habang" => Some(TokenType::WHILE),
-            "gawin"    => Some(TokenType::DO),
-            "tuwing"   => Some(TokenType::FOR),
-            "at"   => Some(TokenType::AND),
-            "okaya"    => Some(TokenType::OR),
-            "tigil" => Some(TokenType::BREAK),
-            "ituloy" => Some(TokenType::CONTINUE),
-            "totoo"  => Some(TokenType::TRUE),
-            "mali" => Some(TokenType::FALSE),
-            "wala"  => Some(TokenType::NONE),
-            "isama"=> Some(TokenType::IMPORT),
-            "ipakita" => Some(TokenType::PRINT),
-            "ipasok" => Some(TokenType::INPUT),
-            "piliin"=> Some(TokenType::SWITCH),
-            "kapag"  => Some(TokenType::CASE),
-            "edi"=> Some(TokenType::DEFAULT),
-            "ibalik"=> Some(TokenType::RETURN),
+            "gawa"  => Some(TokenType::GAWA),
+            "uri"   => Some(TokenType::URI),
+            "tiyak" => Some(TokenType::TIYAK),
+            "itakda"   => Some(TokenType::ITAKDA),
+            "kung"    => Some(TokenType::KUNG),
+            "kundi"  => Some(TokenType::KUNDI),
+            "habang" => Some(TokenType::HABANG),
+            "gawin"    => Some(TokenType::GAWIN),
+            "tuwing"   => Some(TokenType::TUWING),
+            "at"   => Some(TokenType::AT),
+            "okaya"    => Some(TokenType::OKAYA),
+            "tigil" => Some(TokenType::TIGIL),
+            "ituloy" => Some(TokenType::ITULOY),
+            "totoo"  => Some(TokenType::TOTOO),
+            "mali" => Some(TokenType::MALI),
+            "wala"  => Some(TokenType::WALA),
+            "isama"=> Some(TokenType::ISAMA),
+            "ipakita" => Some(TokenType::IPAKITA),
+            "ipasok" => Some(TokenType::IPASOK),
+            "piliin"=> Some(TokenType::PILIIN),
+            "kapag"  => Some(TokenType::KAPAG),
+            "edi"=> Some(TokenType::EDI),
+            "ibalik"=> Some(TokenType::IBALIK),
             _ => None
         }
     }
