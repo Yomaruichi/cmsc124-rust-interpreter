@@ -1,0 +1,2 @@
+Token(type= NUMBER, lexeme= '13.4', literal= 13.4, line= 1)
+Token(type= EOF, lexeme= '', literal= null, line= 1)

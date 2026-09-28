@@ -1,8 +1,0 @@
-x
-edad
-_pangalan
-bilang1
-camelCase
-snake_case
-ITAKDA
-Kung

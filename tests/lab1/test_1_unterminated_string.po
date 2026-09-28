@@ -1,2 +1,0 @@
-itakda brokenString = "unterminated
-itakda okayString = "hello";
