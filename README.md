@@ -113,10 +113,9 @@ Exit codes:
 ### Comments
 
 - Line comments: `//`
-- Block comments: '/*...*/'
-- Nesting: not supported
-- Harness note: comment_prefix in tests/lab*/manifest.json is set to the
-  token above
+- Block comments: `/* ... */`
+- Nesting: Supported
+- Harness note: comment_prefix in tests/lab*/manifest.json is set to the token above
 
 ## Whitespace and termination
 
