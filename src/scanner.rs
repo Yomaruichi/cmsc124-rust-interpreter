@@ -38,11 +38,10 @@ impl Scanner {
                     '"' => value.push('"'),
                     '\\' => value.push('\\'),
                     other => {
-                        eprintln!(
-                            "[line {}] Error: Invalid escape sequence '\\{}'.",
-                            self.line, other
+                        self.report(
+                            self.line,
+                            &format!("Invalid escape sequence '\\{}'. Supported: \\n, \\\", \\\\.", other),
                         );
-                        self.had_error = true;
                         value.push(other);
                     }
                 }
@@ -51,11 +50,7 @@ impl Scanner {
             }
         }
 
-        if self.peek() != '"' {
-            eprintln!("[line {}] Error: Unterminated string.", self.line);
-            self.had_error = true;
-            return;
-        }
+        self.report(self.line, "Unterminated string. Strings must end on the same line.");
 
         self.advance();
 
@@ -72,6 +67,11 @@ impl Scanner {
             while self.peek().is_ascii_digit() {
                 self.advance();
             }
+        }
+
+        if self.peek() == '.' && !self.peek_next().is_ascii_digit() {
+            self.report(self.line, "A decimal point must be followed by a digit.");
+            self.advance();
         }
 
         let text: String = self.source[self.start..self.current].iter().collect();
@@ -205,7 +205,7 @@ impl Scanner {
             '"' => self.string(),
             '0'..='9' => self.number(),
             c if c.is_alphanumeric() || c == '_' => self.identifier(),
-            _ => self.error(input)
+            _ => self.unexpected_char(input)
         }
     }
 
@@ -242,9 +242,19 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    fn error(&mut self, ch: char) {
-        eprintln!("[line {}] Error: Unexpected character '{}'", self.line, ch);
+    fn report(&mut self, line: usize, message: &str) {
+        eprintln!("[line {}] Error: {}", line, message);
         self.had_error = true;
+    }
+
+    fn unexpected_char(&mut self, ch: char) {
+        let message = match ch {
+            '&' => "Unexpected character '&'. Use 'at' for logical and.".to_string(),
+            '|' => "Unexpected character '|'. Use 'okaya' for logical or.".to_string(),
+            '.' if self.peek().is_ascii_digit() => "Unexpected character '.'. A decimal needs a digit before the point: write 0.5, not .5.".to_string(),
+            _ => format!("Unexpected character '{}'.", ch),
+        };
+        self.report(self.line, &message);
     }
 
     fn line_comment(&mut self) {
@@ -254,12 +264,12 @@ impl Scanner {
     }
 
     fn block_comment(&mut self) {
+    let start_line = self.line;
     let mut depth = 1;
 
     while depth > 0 {
         if self.is_at_end() {
-            eprintln!("[line {}] Error: Unterminated block comment.", self.line);
-            self.had_error = true;
+            self.report(start_line, "Unterminated block comment.");
             return;
         }
 
