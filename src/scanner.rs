@@ -1,5 +1,6 @@
 use crate::token::{Token, TokenType, Value};
 
+// struct maintaining character source, current offset, line tracking, and accumulated tokens
 pub struct Scanner {
     source: Vec<char>,
     tokens: Vec<Token>,
@@ -10,6 +11,7 @@ pub struct Scanner {
 }
 
 impl Scanner {
+    // initializes new Scanner with initial values 
     pub fn new_string(source: &str) -> Self {
         Scanner {
             source: source.chars().collect(),
@@ -21,10 +23,13 @@ impl Scanner {
         }
     }
 
+    // String token builder, consumes characters up to ending '"', emits TokenType::STRING or returns 65 for unterminated string
     fn string(&mut self) {
         let mut value = String::new();
 
+        // advance through characters
         while self.peek() != '"' && !self.is_at_end() && self.peek() != '\n' {
+            // checks for special escape command
             if self.peek() == '\\' {
                 self.advance();
 
@@ -45,11 +50,13 @@ impl Scanner {
                         value.push(other);
                     }
                 }
+                // pushes current character into value
             } else {
                 value.push(self.advance());
             }
         }
 
+        // returns error 65
         if self.peek() != '"' {
             self.report(self.line, "Unterminated string. Strings must end on the same line.");
             return;
@@ -59,6 +66,7 @@ impl Scanner {
         self.add_token_with_literal(TokenType::STRING, Value::String(value));
     }
 
+    // number token builder
     fn number(&mut self) {
         while self.peek().is_ascii_digit() {
             self.advance();
@@ -96,12 +104,14 @@ impl Scanner {
         &self.tokens
     }
 
+    // helper, makes current char the target and advances looker
     pub fn advance (&mut self) -> char {
         let ch = self.source[self.current];
         self.current += 1;
         return ch;
     }
 
+    // helper, advances and returns true if char matches, used for comments
     fn match_char(&mut self, expected: char) -> bool {
         if self.is_at_end() || self.source[self.current] != expected {
             return false;
@@ -110,6 +120,7 @@ impl Scanner {
         true
     }
 
+    // helper, 
     fn peek(&self) -> char {
         if self.is_at_end() {
             '\0'
@@ -118,6 +129,7 @@ impl Scanner {
         }
     }
 
+    // helper, 
     fn peek_next(&self) -> char {
         if self.current + 1 >= self.source.len() {
             '\0'
@@ -126,6 +138,7 @@ impl Scanner {
         }
     }
     
+    // helper, push to tokens vector for single, dual, and keyword tokens
     fn add_token(&mut self, token_type: TokenType) {
         let text = self.source[self.start..self.current].iter().collect();
         self.tokens.push(Token {
@@ -137,6 +150,7 @@ impl Scanner {
 
     }
 
+    // helper, push to tokens vector for tokens with literals ( Identifier, Numbers, Boolean, Nil )
     fn add_token_with_literal(&mut self, token_type: TokenType, literal: Value) {
         let text = self.source[self.start..self.current].iter().collect();
         self.tokens.push(Token {
@@ -147,6 +161,7 @@ impl Scanner {
         })
     }
 
+    // identifier token builder
     fn identifier(&mut self) {
         while self.peek().is_alphanumeric() || self.peek() == '_' {
             self.advance();
@@ -163,6 +178,7 @@ impl Scanner {
         }
     }
 
+    // runs first, takes first char and match from given possible available token types
     pub fn scan_token(&mut self) {
         let input = self.advance();
 
@@ -211,6 +227,7 @@ impl Scanner {
         }
     }
 
+    // helper, checks for keyword tokens
     fn keyword_lookup(text: &str) -> Option<TokenType> {
         match text {
             "gawa"  => Some(TokenType::GAWA),
@@ -240,15 +257,18 @@ impl Scanner {
         }
     }
 
+    // helper, checks length of file against current index
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
+    // helper, formats error return and reports if an actual error happened
     fn report(&mut self, line: usize, message: &str) {
         eprintln!("[line {}] Error: {}", line, message);
         self.had_error = true;
     }
 
+    // helper, returns error hints
     fn unexpected_char(&mut self, ch: char) {
         let message = match ch {
             '&' => "Unexpected character '&'. Use 'at' for logical and.".to_string(),
@@ -259,12 +279,14 @@ impl Scanner {
         self.report(self.line, &message);
     }
 
+    // one line comments
     fn line_comment(&mut self) {
         while self.peek() != '\n' && !self.is_at_end() {
             self.advance();
         }
     }
 
+    // 
     fn block_comment(&mut self) {
     let start_line = self.line;
     let mut depth = 1;

@@ -1,3 +1,4 @@
+// define values to represent literal runtime values
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Number(f64),
@@ -6,6 +7,7 @@ pub enum Value {
     Nil,
 }
 
+// different display for different literal values
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -17,6 +19,7 @@ impl std::fmt::Display for Value {
     }
 }
 
+// token type list
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     // Single-character tokens
@@ -75,6 +78,7 @@ pub enum TokenType {
     IBALIK,
 }
 
+// Holds token type, raw lexeme, literal value, and line number
 #[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: TokenType,
@@ -83,6 +87,7 @@ pub struct Token {
     pub line: usize,
 }
 
+// Output format for token printing
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let literal = match &self.literal {
