@@ -1,2 +1,2 @@
-Token(type= CONTINUE, lexeme= 'ituloy', literal= null, line= 1)
+Token(type= ITULOY, lexeme= 'ituloy', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

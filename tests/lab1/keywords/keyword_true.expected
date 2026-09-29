@@ -1,2 +1,2 @@
-Token(type= TRUE, lexeme= 'totoo', literal= true, line= 1)
+Token(type= TOTOO, lexeme= 'totoo', literal= true, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

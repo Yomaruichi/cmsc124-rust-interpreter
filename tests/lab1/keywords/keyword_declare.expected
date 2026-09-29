@@ -1,2 +1,2 @@
-Token(type= LET, lexeme= 'itakda', literal= null, line= 1)
+Token(type= ITAKDA, lexeme= 'itakda', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

@@ -1,0 +1,6 @@
+Token(type= ITAKDA, lexeme= 'itakda', literal= null, line= 1)
+Token(type= IDENTIFIER, lexeme= 'path', literal= null, line= 1)
+Token(type= EQUAL, lexeme= '=', literal= null, line= 1)
+Token(type= STRING, lexeme= '"C:\x\folder"', literal= C:xfolder, line= 1)
+Token(type= SEMICOLON, lexeme= ';', literal= null, line= 1)
+Token(type= EOF, lexeme= '', literal= null, line= 1)

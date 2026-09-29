@@ -10,6 +10,7 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
 
+    // takes in input separated by space
     match args.as_slice() {
         [_] => {
             run_repl();
@@ -21,7 +22,7 @@ fn main() -> ExitCode {
 
         _ => {
             eprintln!("Usage: run [--tokenize <path>]");
-            ExitCode::from(64)
+            ExitCode::from(64) // bad usage
         }
     }
 }
@@ -31,21 +32,21 @@ fn run_file(path: &str) -> ExitCode {
         Ok(content) => content,
         Err(e) => {
             eprintln!("Error reading '{}': {}", path, e);
-            return ExitCode::from(66);
+            return ExitCode::from(66); // File IO failure
         }
     };
 
     let mut scanner = Scanner::new_string(&source);
-    let tokens = scanner.scan_tokens();
+    let tokens = scanner.scan_tokens(); // scans file into token structs
 
     for token in tokens {
         println!("{}", token);
     }
 
     if scanner.had_error {
-        ExitCode::from(65)
+        ExitCode::from(65) // lexical analysis failure
     } else {
-        ExitCode::from(0)
+        ExitCode::from(0) 
     }
 }
 

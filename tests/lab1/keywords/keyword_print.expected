@@ -1,2 +1,2 @@
-Token(type= PRINT, lexeme= 'ipakita', literal= null, line= 1)
+Token(type= IPAKITA, lexeme= 'ipakita', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)

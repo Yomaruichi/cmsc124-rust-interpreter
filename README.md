@@ -214,8 +214,10 @@ Message format:
 
 | Failure | Exit code |
 |---|---|
+| Invalid input args | 64 |
 | lexical error (unclosed string, unknown char) | 65 |
 | syntax error | 65 |
+| File IO failure | 66 |
 | runtime error | 70 |
 
 
@@ -266,7 +268,6 @@ Output:
 
 ## Known limitations
 
-- Decimals need a digit on both sides of the dot. `.5` and `5.` are both rejected, and there is no standalone `.` token.
 - Negative numbers aren't literals. `-5` scans as `MINUS` then `NUMBER`; the parser has to combine them.
 - Only three escapes: `\n`, `\"`, `\\`. No `\t`, `\r`, or unicode escapes. An unknown escape is reported as an error, but the string is still emitted.
 - Errors carry a line number only, no column.

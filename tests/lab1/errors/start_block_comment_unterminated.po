@@ -1,0 +1,2 @@
+/* Ito ay isang hindi natapos na komento
+itakda x = 10;

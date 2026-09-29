@@ -1,2 +1,2 @@
-Token(type= FUNC, lexeme= 'gawa', literal= null, line= 1)
+Token(type= GAWA, lexeme= 'gawa', literal= null, line= 1)
 Token(type= EOF, lexeme= '', literal= null, line= 1)
