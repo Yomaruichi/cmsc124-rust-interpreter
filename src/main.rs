@@ -1,6 +1,9 @@
 mod scanner;
 mod token;
+mod ast;
+mod parser;
 
+use parser::Parser;
 use scanner::Scanner;
 use std::env;
 use std::fs;
@@ -19,9 +22,10 @@ fn main() -> ExitCode {
 
         [_, flag, path] if flag == "--tokenize" => run_file(path),
 
+        [_, flag, path] if flag == "--parse" => run_parse(path),
 
         _ => {
-            eprintln!("Usage: run [--tokenize <path>]");
+            eprintln!("Usage: run [--tokenize <path>] or [--parse <path>]");
             ExitCode::from(64) // bad usage
         }
     }
