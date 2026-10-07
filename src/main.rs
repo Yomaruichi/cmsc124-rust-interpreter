@@ -20,7 +20,7 @@ fn main() -> ExitCode {
             ExitCode::from(0)
         }
 
-        [_, flag, path] if flag == "--tokenize" => run_file(path),
+        [_, flag, path] if flag == "--tokenize" => run_tokenize(path),
 
         [_, flag, path] if flag == "--parse" => run_parse(path),
 
@@ -31,7 +31,7 @@ fn main() -> ExitCode {
     }
 }
 
-fn run_file(path: &str) -> ExitCode {
+fn run_tokenize(path: &str) -> ExitCode {
     let source = match fs::read_to_string(path) {
         Ok(content) => content,
         Err(e) => {
@@ -54,6 +54,33 @@ fn run_file(path: &str) -> ExitCode {
     }
 }
 
+fn run_parse(path: &str) -> ExitCode {
+    let source = match fs::read_to_string(path) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading '{}': {}", path, e);
+            return ExitCode::from(66);
+        }
+    };
+
+    let mut scanner = Scanner::new_string(&source);
+    let tokens = scanner.scan_tokens().clone();
+
+    if scanner.had_error {
+        return ExitCode::from(65);
+    }
+
+    let mut parser = Parser::new(tokens);
+
+    match parser.expression() {
+        Ok(expr) => {
+            println!("{}", ast::print(&expr));
+            ExitCode::from(0)
+        }
+        Err(_) => ExitCode::from(65),
+    }
+}
+
 fn run_repl() {
     let stdin = io::stdin();
 
@@ -72,10 +99,16 @@ fn run_repl() {
         }
 
         let mut scanner = Scanner::new_string(&line);
-        let tokens = scanner.scan_tokens();
+        let tokens = scanner.scan_tokens().clone();
 
-        for token in tokens {
-            println!("{}", token);
+        if scanner.had_error {
+            continue;
+        }
+
+        let mut parser = Parser::new(tokens);
+        match parser.expression() {
+            Ok(expr) => println!("{}", ast::print(&expr)),
+            Err(_) => {}
         }
     }
 }
