@@ -143,6 +143,24 @@ The grammar below describes expressions only, the scope of Lab 2. Statements, de
 
 Rules are listed from loosest precedence (top) to tightest (bottom). Each rule delegates downward for its operands, which is what makes precedence a consequence of call order rather than something checked explicitly.
 
+legend:
+<name> -> abstraction/can be simplified further
+x | y | z | ... -> can choose either of the 3 or ...n
+[*message] -> not an actual label, but just a message
+
+
+```
+program     → <statement> EOF
+
+statement -> <if_else_stmt> | <loop_stmt> | <expression> | <func_stmt> | <default>
+
+if_else_stmt -> <if> "(" <expression> ")" "{" <default> "}" [*an else statement/multiple else ifs then an else?]
+
+```
+
+
+
+
 ```
 expression → logic_or
 logic_or → logic_and ( "okaya" logic_and )*
