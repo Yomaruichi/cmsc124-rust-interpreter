@@ -65,19 +65,19 @@ fn run_parse(path: &str) -> ExitCode {
 
     let mut scanner = Scanner::new_string(&source);
     let tokens = scanner.scan_tokens().clone();
-
     if scanner.had_error {
         return ExitCode::from(65);
     }
 
     let mut parser = Parser::new(tokens);
-
-    match parser.expression() {
-        Ok(expr) => {
-            println!("{}", ast::print(&expr));
+    match parser.parse_program() {
+        Ok(exprs) => {
+            for expr in &exprs {
+                println!("{}", ast::print(expr));
+            }
             ExitCode::from(0)
         }
-        Err(_) => ExitCode::from(65),
+        Err(_) => ExitCode::from(65), // message already went to stderr
     }
 }
 
@@ -106,9 +106,10 @@ fn run_repl() {
         }
 
         let mut parser = Parser::new(tokens);
-        match parser.expression() {
-            Ok(expr) => println!("{}", ast::print(&expr)),
-            Err(_) => {}
+        if let Ok(exprs) = parser.parse_program() {
+            for expr in &exprs {
+                println!("{}", ast::print(expr));
+            }
         }
     }
 }
