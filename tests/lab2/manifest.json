@@ -1,0 +1,7 @@
+{
+  "ext": ".po",
+  "flag": "--parse",
+  "mode": "sidecar",
+  "comment_prefix": "//",
+  "run_entrypoint": "./run"
+}

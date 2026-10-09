@@ -139,10 +139,50 @@ Tokens are output one per line
 
 ## Grammar
 
+The grammar below describes expressions only, the scope of Lab 2. Statements, declarations, and control flow are out of scope until later labs; `itakda`, `kung`, `habang`, and the rest of the keyword set exist in the scanner but aren't referenced by any rule here yet.
+
+Rules are listed from loosest precedence (top) to tightest (bottom). Each rule delegates downward for its operands, which is what makes precedence a consequence of call order rather than something checked explicitly.
+
+legend:
+<name> -> abstraction/can be simplified further
+x | y | z | ... -> can choose either of the 3 or ...n
+[*message] -> not an actual label, but just a message
+
+
 ```
-[Your complete context-free grammar, current as of the latest activity.
-Unambiguous, with precedence and associativity encoded in rule structure.]
+program     → <statement> EOF
+
+statement -> <if_else_stmt> | <loop_stmt> | <expression> | <func_stmt> | <default>
+
+if_else_stmt -> <if> "(" <expression> ")" "{" <default> "}" [*an else statement/multiple else ifs then an else?]
+
 ```
+
+
+
+
+```
+expression → logic_or
+logic_or → logic_and ( "okaya" logic_and )*
+logic_and → equality ( "at" equality )*
+equality → comparison ( ( "!=" | "==" ) comparison )*
+comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
+term → factor ( ( "-" | "+" ) factor )*
+factor → unary ( ( "/" | "" | "%" ) unary )
+unary → ( "!" | "-" ) unary | primary
+primary → NUMBER | STRING | "totoo" | "mali" | "wala" | "(" expression ")"
+```
+
+### Notes on deviations from the textbook grammar
+
+- `at` / `okaya` (logical and/or) are included at the top of the grammar, above `equality`, following the usual placement `okaya` binds loosest, `at` binds tighter than `okaya` but looser than comparison and equality. So `a == b at c == d` parses as `(a == b) at (c == d)`. We chose not to delay adding them to the grammar as it might create grammar drift.
+- `%` (modulo) is folded into `factor`, at the same precedence as `*` and `/`, left-associative with them. We treat it as a third multiplicative operator rather than giving it its own precedence level. We verified this directly: `10 - 6 % 4` parses as `(- 10 (% 6 4))`, so the modulo happens before the subtraction.
+- Boolean and nil literals use our keywords directly `totoo` (true), `mali` (false), `wala` (nil), in place of Lox's `true` / `false` / `nil`.
+- `,`, `{`, `}`, `uri` (type), and `gawa` (func) aren't referenced by any rule here. They're reserved in the scanner for later activities; blocks, function declarations, and argument lists aren't part of the expression grammar Lab 2 covers.
+
+### Associativity
+
+Every binary rule above is left-associative: each repetition in the `*` loop folds the previously built tree into the new left operand, so `1 - 2 - 3` parses as `(- (- 1 2) 3)`, not `(- 1 (- 2 3))`. The same fold pattern applies to `at` and `okaya` — `x at y at z` parses as `(at (at x y) z)`. We have no right-associative operators yet (no exponentiation, no assignment) if we add one later, this section gets a dedicated note, since it needs recursion instead of the fold shown above.
 
 ## Parse output format
 
