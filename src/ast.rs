@@ -10,7 +10,10 @@ pub enum Expr {
 
 pub fn print(expr: &Expr) -> String {
     match expr {
-        Expr::Literal(value) => value.to_string(),
+        Expr::Literal(value) => match value {
+            Value::String(s) => format!("{:?}", s),
+            other => other.to_string(),
+        },
         Expr::Unary { operator, right } => {
             format!("({} {})", operator.lexeme, print(right))
         }

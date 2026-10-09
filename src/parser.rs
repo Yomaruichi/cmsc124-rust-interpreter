@@ -74,15 +74,21 @@ impl Parser {
     // ---- grammar rules, so far: expression -> factor -> unary -> primary ----
 
     pub fn expression(&mut self) -> Result<Expr, ParseError> {
-        self.factor()
+        self.logic_or()
     }
 
-    fn factor(&mut self) -> Result<Expr, ParseError> {
-        let mut expr = self.unary()?;
+    // one left-associative level: operand ( operator operand )*
+    fn binary_level(
+        &mut self,
+        operators: &[TokenType],
+        next: fn(&mut Parser) -> Result<Expr, ParseError>,
+    ) -> Result<Expr, ParseError> {
+        let mut expr = next(self)?;
 
-        while self.match_token(&[TokenType::STAR, TokenType::SLASH, TokenType::MODULO]) {
+        while self.match_token(operators) {
             let operator = self.previous().clone();
-            let right = self.unary()?;
+            let right = next(self)?;
+            // the tree built so far becomes the LEFT child: this is the left-associative fold
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
@@ -93,9 +99,51 @@ impl Parser {
         Ok(expr)
     }
 
+    fn logic_or(&mut self) -> Result<Expr, ParseError> {
+        self.binary_level(&[TokenType::OKAYA], Parser::logic_and)
+    }
+
+    fn logic_and(&mut self) -> Result<Expr, ParseError> {
+        self.binary_level(&[TokenType::AT], Parser::equality)
+    }
+
+    fn equality(&mut self) -> Result<Expr, ParseError> {
+        self.binary_level(&[TokenType::NOTEQUAL, TokenType::EQUALEQUAL], Parser::comparison)
+    }
+
+    fn comparison(&mut self) -> Result<Expr, ParseError> {
+        self.binary_level(
+            &[TokenType::GREATER, TokenType::GREATEREQUAL, TokenType::LESS, TokenType::LESSEQUAL],
+            Parser::term,
+        )
+    }
+
+    fn term(&mut self) -> Result<Expr, ParseError> {
+        self.binary_level(&[TokenType::MINUS, TokenType::PLUS], Parser::factor)
+    }
+
+    fn factor(&mut self) -> Result<Expr, ParseError> {
+        self.binary_level(&[TokenType::SLASH, TokenType::STAR, TokenType::MODULO], Parser::unary)
+    }
+
     fn unary(&mut self) -> Result<Expr, ParseError> {
-        // "!" and "-" arrive next week; for now unary passes straight through
+        if self.match_token(&[TokenType::NOT, TokenType::MINUS]) {
+            let operator = self.previous().clone();
+            let right = self.unary()?; // recursive, so !!x and --5 work
+            return Ok(Expr::Unary { operator, right: Box::new(right) });
+        }
         self.primary()
+    }
+
+    // program → ( expression ";" )* EOF
+    pub fn parse_program(&mut self) -> Result<Vec<Expr>, ParseError> {
+        let mut exprs = Vec::new();
+        while !self.is_at_end() {
+            let expr = self.expression()?;
+            self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
+            exprs.push(expr);
+        }
+        Ok(exprs)
     }
 
     fn primary(&mut self) -> Result<Expr, ParseError> {
