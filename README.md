@@ -158,9 +158,6 @@ if_else_stmt -> <if> "(" <expression> ")" "{" <default> "}" [*an else statement/
 
 ```
 
-
-
-
 ```
 expression → logic_or
 logic_or → logic_and ( "okaya" logic_and )*
@@ -186,12 +183,18 @@ Every binary rule above is left-associative: each repetition in the `*` loop fol
 
 ## Parse output format
 
-```
-[one line of real --parse output, e.g. (+ 1.0 (* 2.0 3.0))]
+```bash
+(2 * 3) * 4;
 ```
 
-- Groupings print as: [form]
-- Numbers print as: [form]
+output
+
+```bash
+(* (group (* 2.0 3.0)) 4.0)
+```
+
+- Groupings print as: `(group <expression>)`, e.g. `(* (group (+ 2.0 3.0)) 4.0)`.
+- Numbers print as: (`2` prints as `2.0`)
 
 ## Semantics
 
@@ -312,7 +315,7 @@ Output:
 - Only three escapes: `\n`, `\"`, `\\`. No `\t`, `\r`, or unicode escapes. An unknown escape is reported as an error, but the string is still emitted.
 - Errors carry a line number only, no column.
 - The REPL scans each line in isolation. Line numbers always read 1, and a block comment can't span REPL lines.
-- Unterminated block comments report the wrong line. The error uses the line where the file ended, not where the `/*` opened, and everything after the `/*` is swallowed.
+- Error recovery resynchronizes only on `;`. After a syntax error the parser discards tokens through the next `;` and resumes, so multiple errors are reported per file. A missing `;` can therefore also swallow the following expression.
 
 
 ## Changelog
@@ -321,3 +324,4 @@ Output:
 | Activity | What changed in the language |
 |---|---|
 | Lab 1 | Initial lexical grammar: single- and two-character operators, single-line strings with `\n` `\"` `\\` escapes, integer and decimal literals, identifiers, 22 Tagalog keywords, `//` and nested `/* */` comments, `--tokenize` flag and REPL. |
+| Lab 2 | Expression grammar with seven precedence levels (`okaya`, `at`, equality, comparison, `+ -`, `* / %`, unary), all left-associative. Added the `%` operator, unary `!` and `-` (chainable), and parenthesized grouping. Literals are numbers, strings, `totoo`, `mali`, `wala`. A program is a sequence of expressions, each ending in `;`. Added the `--parse` flag, which prints each expression as a prefix tree, e.g. `(+ 2.0 (* 3.0 4.0))`; the REPL now prints parses. Syntax errors report line and expectation on stderr, exit 65, and recover at the next `;`. |
