@@ -136,14 +136,30 @@ impl Parser {
     }
 
     // program → ( expression ";" )* EOF
-    pub fn parse_program(&mut self) -> Result<Vec<Expr>, ParseError> {
+    pub fn parse_program(&mut self) -> Vec<Expr> {
         let mut exprs = Vec::new();
         while !self.is_at_end() {
-            let expr = self.expression()?;
-            self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
-            exprs.push(expr);
+            match self.expression_statement() {
+                Ok(expr) => exprs.push(expr),
+                Err(_) => self.synchronize(), // error already printed by Parser::error
+            }
         }
-        Ok(exprs)
+        exprs
+    }
+
+    fn expression_statement(&mut self) -> Result<Expr, ParseError> {
+        let expr = self.expression()?;
+        self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
+        Ok(expr)
+    }
+
+    // discard tokens through the next ';' so parsing resumes at a fresh expression
+    fn synchronize(&mut self) {
+        while !self.is_at_end() {
+            if self.advance().token_type == TokenType::SEMICOLON {
+                return;
+            }
+        }
     }
 
     fn primary(&mut self) -> Result<Expr, ParseError> {

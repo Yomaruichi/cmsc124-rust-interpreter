@@ -70,15 +70,14 @@ fn run_parse(path: &str) -> ExitCode {
     }
 
     let mut parser = Parser::new(tokens);
-    match parser.parse_program() {
-        Ok(exprs) => {
-            for expr in &exprs {
-                println!("{}", ast::print(expr));
-            }
-            ExitCode::from(0)
-        }
-        Err(_) => ExitCode::from(65), // message already went to stderr
+    let exprs = parser.parse_program();
+    if parser.had_error {
+        return ExitCode::from(65);
     }
+    for expr in &exprs {
+        println!("{}", ast::print(expr));
+    }
+    ExitCode::from(0)
 }
 
 fn run_repl() {
@@ -106,10 +105,13 @@ fn run_repl() {
         }
 
         let mut parser = Parser::new(tokens);
-        if let Ok(exprs) = parser.parse_program() {
-            for expr in &exprs {
-                println!("{}", ast::print(expr));
-            }
+        let exprs = parser.parse_program();
+        if parser.had_error {
+            continue;
+        }
+
+        for expr in &exprs {
+            println!("{}", ast::print(expr));
         }
     }
 }
