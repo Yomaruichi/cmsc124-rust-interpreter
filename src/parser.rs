@@ -80,16 +80,16 @@ impl Parser {
     // one left-associative level: operand ( operator operand )*
     fn binary_level(
         &mut self,
-        operators: &[TokenType],
-        next: fn(&mut Parser) -> Result<Expr, ParseError>,
+        operators: &[TokenType],                                            // which tokens this level handles
+        next: fn(&mut Parser) -> Result<Expr, ParseError>,                  // the next-TIGHTER rule, as a function pointer
     ) -> Result<Expr, ParseError> {
-        let mut expr = next(self)?;
+        let mut expr = next(self)?;                                   // 1. left operand comes from the tighter rule
 
-        while self.match_token(operators) {
-            let operator = self.previous().clone();
-            let right = next(self)?;
+        while self.match_token(operators) {                           // 2. the ( operator operand )* loop
+            let operator = self.previous().clone();                  
+            let right = next(self)?;                                  // 3. right operand, again from the tighter rule
             // the tree built so far becomes the LEFT child: this is the left-associative fold
-            expr = Expr::Binary {
+            expr = Expr::Binary {                                           // 5. the tree so far becomes the LEFT child
                 left: Box::new(expr),
                 operator,
                 right: Box::new(right),
@@ -164,6 +164,7 @@ impl Parser {
 
     fn primary(&mut self) -> Result<Expr, ParseError> {
         if self.match_token(&[TokenType::NUMBER, TokenType::STRING]) {
+            // the scanner already built a typed Value on the token, so reuse it
             let value = self.previous().literal.clone().expect("literal token must carry a Value");
             return Ok(Expr::Literal(value));
         }
@@ -179,7 +180,7 @@ impl Parser {
         }
 
         if self.match_token(&[TokenType::LPAREN]) {
-            let expr = self.expression()?;
+            let expr = self.expression()?;                                          // a whole new expression inside
             self.consume(TokenType::RPAREN, "Expect ')' after expression.")?;
             return Ok(Expr::Grouping(Box::new(expr)));
         }
