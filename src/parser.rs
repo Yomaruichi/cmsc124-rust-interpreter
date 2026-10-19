@@ -3,6 +3,7 @@ use crate::token::{Token, TokenType, Value};
 
 pub struct Parser {
     tokens: Vec<Token>,
+    expressions: Vec<Expr>,
     current: usize,
     pub had_error: bool,
 }
@@ -11,7 +12,7 @@ pub struct ParseError;
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, current: 0, had_error: false }
+        Parser { tokens, expressions: Vec::new(), current: 0, had_error: false }
     }
 
     // ---- six helpers, token-level equivalents of the scanner's ----
@@ -136,15 +137,18 @@ impl Parser {
     }
 
     // program → ( expression ";" )* EOF
-    pub fn parse_program(&mut self) -> Vec<Expr> {
-        let mut exprs = Vec::new();
+    pub fn parse_program(&mut self) -> Result<&Vec<Expr>, ParseError> {
         while !self.is_at_end() {
             match self.expression_statement() {
-                Ok(expr) => exprs.push(expr),
+                Ok(expr) => self.expressions.push(expr),
                 Err(_) => self.synchronize(), // error already printed by Parser::error
             }
         }
-        exprs
+        if self.had_error {
+            Err(ParseError)
+        } else {
+            Ok(&self.expressions)
+        }
     }
 
     fn expression_statement(&mut self) -> Result<Expr, ParseError> {
