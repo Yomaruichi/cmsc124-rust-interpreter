@@ -55,7 +55,16 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
         }
 
         Expr::Unary{operator, right} => {
-            todo!();
+            let right = evaluate(right)?;
+            match operator.token_type {
+                TokenType::MINUS => {
+                    let n = number_unary(operator, &right)?;
+                    Ok(Value::Number(-n))
+                }
+
+                // add an error here for a unsupported operator
+                _ => todo!()
+            }
         }
 
         Expr::Binary{left, operator, right} => {
@@ -68,3 +77,11 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
     }
 }
  
+
+
+fn number_unary(operator: &Token, value: &Value) -> Result<f64, RuntimeError>{
+    match value {
+        Value::Number(n) => Ok(*n),
+        _ => Err(RuntimeError::new(operator, "Operand must be a number.")),
+    }
+}
