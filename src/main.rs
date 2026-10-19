@@ -2,6 +2,7 @@ mod scanner;
 mod token;
 mod ast;
 mod parser;
+mod evaluator;
 
 use parser::Parser;
 use scanner::Scanner;
@@ -23,6 +24,8 @@ fn main() -> ExitCode {
         [_, flag, path] if flag == "--tokenize" => run_tokenize(path),
 
         [_, flag, path] if flag == "--parse" => run_parse(path),
+
+        [_, flag, path] if flag == "--eval" => run_evaluate(path),
 
         _ => {
             eprintln!("Usage: run [--tokenize <path>] or [--parse <path>]");
@@ -78,6 +81,38 @@ fn run_parse(path: &str) -> ExitCode {
             ExitCode::from(0)
         }
         Err(_) => ExitCode::from(65), // messages already on stderr; stdout stays empty
+    }
+}
+
+// scan -> parse -> evaluate
+// 65 = syntax error (scanner or parser), 70 = runtime error, 0 = success
+fn run_evaluate(path: &str) -> ExitCode {
+    let source = match fs::read_to_string(path) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading '{}': {}", path, e);
+            return ExitCode::from(66);
+        }
+    };
+ 
+    let mut scanner = Scanner::new_string(&source);
+    let tokens = scanner.scan_tokens().clone();
+    if scanner.had_error {
+        return ExitCode::from(65);
+    }
+ 
+    let mut parser = Parser::new(tokens);
+    let exprs = match parser.parse_program() {
+        Ok(exprs) => exprs,
+        Err(_) => return ExitCode::from(65), // messages already on stderr
+    };
+ 
+    match evaluator::interpret(exprs) { // this returns a value already, thats why match is used
+        Ok(()) => ExitCode::from(0),
+        Err(e) => {
+            evaluator::report_runtime_error(&e); //prints out the error itself
+            ExitCode::from(70) // runtime failure
+        }
     }
 }
 
