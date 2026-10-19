@@ -68,7 +68,7 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
         }
 
         Expr::Binary{left, operator, right} => {
-            todo!();
+            evaluate_binary(left, operator, right)
         }
 
         Expr::Grouping (inner) => {
@@ -83,5 +83,53 @@ fn number_unary(operator: &Token, value: &Value) -> Result<f64, RuntimeError>{
     match value {
         Value::Number(n) => Ok(*n),
         _ => Err(RuntimeError::new(operator, "Operand must be a number.")),
+    }
+}
+
+
+fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value, RuntimeError> {
+ 
+    let l = evaluate(left)?;
+    let r = evaluate(right)?;
+ 
+    match operator.token_type {
+     
+        TokenType::MINUS => {
+            let (a, b) = number_operands(operator, &l, &r)?;
+            Ok(Value::Number(a - b))
+        }
+        TokenType::STAR => {
+            let (a, b) = number_operands(operator, &l, &r)?;
+            Ok(Value::Number(a * b))
+        }
+        TokenType::SLASH => {
+            let (a, b) = number_operands(operator, &l, &r)?;
+            if (b == 0.0) {
+                return Err(RuntimeError::new(operator, "Division by zero."));
+            }
+            Ok(Value::Number(a / b))
+        }
+        TokenType::MODULO => {
+            let (a, b) = number_operands(operator, &l, &r)?;
+            if (b == 0.0) {
+                return Err(RuntimeError::new(operator, "Modulo by zero."));
+            }
+            Ok(Value::Number(a % b))
+        }
+        TokenType::PLUS => match (&l, &r) {
+            (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
+ 
+            _ => Err(RuntimeError::new(operator, "Operands must be two numbers.")),
+        },
+ 
+        (_) => todo!()
+    }
+}
+
+//used for binary pattern
+fn number_operands(operator: &Token, left: &Value, right: &Value) -> Result<(f64, f64), RuntimeError> {
+    match (left, right) {
+        (Value::Number(a), Value::Number(b)) => Ok((*a, *b)),
+        _ => Err(RuntimeError::new(operator, "Operands must be numbers.")),
     }
 }
