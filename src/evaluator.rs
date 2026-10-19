@@ -72,7 +72,7 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
         }
 
         Expr::Grouping (inner) => {
-            todo!();
+            evaluate(inner)
         }
     }
 }
