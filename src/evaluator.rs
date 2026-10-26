@@ -2,7 +2,7 @@ mod coercion;
 
 use crate::ast::Expr;
 use crate::token::{Token, TokenType, Value};
-use crate::evaluator::coercion::{Rank, promote};
+use crate::evaluator::coercion::{Rank, promote, coerceValue};
  
 
  
@@ -98,6 +98,7 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
     let r = evaluate(right)?;
  
     match operator.token_type {
+        
      
         TokenType::MINUS => {
             let (a, b) = number_operands(operator, &l, &r)?;
@@ -114,6 +115,8 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
             }
             Ok(Value::Number(a / b))
         }
+
+        
         TokenType::MODULO => {
             let (a, b) = number_operands(operator, &l, &r)?;
             if (b == 0.0) {
@@ -121,8 +124,16 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
             }
             Ok(Value::Number(a % b))
         }
+
+        // implement concatenation, numeric addition, and boolean addition
         TokenType::PLUS => {
-            let (a, b, target) = promote(&l, &r);
+            let (mut a, mut b, target) = promote(&l, &r);
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
+                
+            }
 
             match (a, b) {
                 (Value::Number(a), Value::Number(b)) => {
@@ -131,10 +142,13 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
                 (Value::String(a), Value::String(b)) => {
                     Ok(Value::String(a + &b))
                 }
+
                 _ => Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),)),
             }
         },
  
+
+
         (_) => todo!()
     }
 }

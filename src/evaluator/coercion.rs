@@ -47,4 +47,7 @@ pub fn promote(left: &Value, right: &Value) -> (Value, Value, Rank) {
     (coerce(left, target), coerce(right, target), target)
 }
 
-
+// a public implementation of coerce (just tried how access modifiers work)
+pub fn coerceValue(value: &Value, target: Rank) -> Value {
+    coerce(value, target)
+}
