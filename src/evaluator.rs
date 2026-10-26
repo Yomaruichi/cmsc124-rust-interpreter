@@ -101,8 +101,23 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
         
      
         TokenType::MINUS => {
-            let (a, b) = number_operands(operator, &l, &r)?;
-            Ok(Value::Number(a - b))
+            let (mut a, mut b, target) = promote(&l, &r);
+
+            //check if one of the operands is boolean
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
+            }
+            
+            match (a, b) {
+                (Value::Number(x), Value::Number(y)) => {
+                    Ok(Value::Number(x - y))
+                }
+                _ => {
+                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
+                }
+            }
         }
         TokenType::STAR => {
             let (a, b) = number_operands(operator, &l, &r)?;
