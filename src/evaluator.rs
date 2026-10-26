@@ -1,5 +1,8 @@
+mod coercion;
+
 use crate::ast::Expr;
 use crate::token::{Token, TokenType, Value};
+use crate::evaluator::coercion::{Rank, promote};
  
 
  
@@ -39,6 +42,8 @@ pub fn interpret(exprs: &[Expr]) -> Result<(), RuntimeError> {
 pub fn stringify(value: &Value) -> String {
     match value {
         Value::Number(n) => n.to_string(),
+        Value::Boolean(n) => n.to_string(),
+        Value::Nil => "nil".to_string(),
         other => other.to_string(),
     }
 }
@@ -116,10 +121,18 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
             }
             Ok(Value::Number(a % b))
         }
-        TokenType::PLUS => match (&l, &r) {
-            (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
- 
-            _ => Err(RuntimeError::new(operator, "Operands must be two numbers.")),
+        TokenType::PLUS => {
+            let (a, b, target) = promote(&l, &r);
+
+            match (a, b) {
+                (Value::Number(a), Value::Number(b)) => {
+                    Ok(Value::Number(a + b))
+                }
+                (Value::String(a), Value::String(b)) => {
+                    Ok(Value::String(a + &b))
+                }
+                _ => Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),)),
+            }
         },
  
         (_) => todo!()
