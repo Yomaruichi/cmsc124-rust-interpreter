@@ -138,11 +138,27 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
             }
         }
         TokenType::SLASH => {
-            let (a, b) = number_operands(operator, &l, &r)?;
-            if (b == 0.0) {
-                return Err(RuntimeError::new(operator, "Division by zero."));
+            let (mut a, mut b, target) = promote(&l, &r);
+
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
             }
-            Ok(Value::Number(a / b))
+
+            match (a, b) {
+                (Value::Number(x), Value::Number(y)) => {
+                    if (y == 0.0) { //check if divide by zero
+                        Err(RuntimeError::new(operator, "cant divide by zero"))
+                    } else {
+                        Ok(Value::Number(x / y))
+                    }
+                    
+                }
+                _ => {
+                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
+                }
+            }
         }
 
         
