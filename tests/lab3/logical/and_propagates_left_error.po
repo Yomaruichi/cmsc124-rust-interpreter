@@ -1,0 +1,2 @@
+// Errors propagate when the operand must actually be evaluated.
+(1 / 0) at mali; // expect runtime error: Division by zero.

@@ -209,8 +209,9 @@ language.]
 
 ### Truthiness
 
-[The complete rule. Which values are false in a condition; everything else is
-true.]
+- Falsey values: `mali`, `wala`, numeric zero (including `-0.0`), and the empty string `""`.
+- Truthy values: `totoo`, all nonzero numbers, and all nonempty strings. Whitespace-only strings such as `" "` are truthy; strings are not trimmed or parsed as numbers.
+- Truthiness does not change a value's type or the strict equality rules.
 
 ### Operator semantics
 
@@ -236,7 +237,15 @@ Arithmetic uses operator-specific coercion rather than a universal type hierarch
 - `wala == wala` is `true`; `wala == mali`, `totoo == 1`, and `"3" == 3` are `false`. `!=` negates equality.
 - All six operators return booleans. For example, `3 > 2` and `totoo <= 1` are `true`, even though `totoo == 1` is `false`.
 - Comparisons associate left to right rather than forming mathematical chains: `3 > 2 > 1` means `(3 > 2) > 1`, which is `false` because the first result converts to `1`.
-- Logical operators (`!`, `at`, `okaya`) and truthiness are not implemented yet.
+
+### Logical operators
+
+- `!value` returns the opposite of the value's truthiness; for example, `!0` and `!""` are `true`.
+- `left at right` returns `false` without evaluating `right` when `left` is falsey; otherwise it evaluates `right` and returns its truthiness.
+- `left okaya right` returns `true` without evaluating `right` when `left` is truthy; otherwise it evaluates `right` and returns its truthiness.
+- All three operators accept every runtime type and return booleans, rather than returning an operand.
+- Short-circuiting skips runtime work and errors: `0 at (1 / 0)` returns `false`, and `"yes" okaya (1 / 0)` returns `true`. Errors in operands that are evaluated still propagate normally. Both operands must still be syntactically valid.
+- `!` binds tighter than `at`, which binds tighter than `okaya`.
 
 ### Scope and bindings
 
@@ -247,7 +256,7 @@ Arithmetic uses operator-specific coercion rather than a universal type hierarch
 
 ### Control flow and functions
 
-- Logical operators return: [booleans, or the operand]
+- Logical operators return booleans using the truthiness and short-circuit rules above.
 - Dangling else binds to: [which if]
 - Closure capture of a loop variable: [per iteration, or shared]
 - Function with no return statement produces: [value]

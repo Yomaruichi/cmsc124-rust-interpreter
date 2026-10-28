@@ -48,7 +48,8 @@ pub fn stringify(value: &Value) -> String {
     }
 }
 
-// Literals and grouping preserve their values; operator expressions dispatch to their type rules.
+// Evaluates an expression tree, preserving literal/grouped values and propagating runtime errors.
+// Unary ! accepts any Value through truthiness; unary minus accepts numbers and booleans.
 pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
 
     // evaluate each enum type
@@ -65,6 +66,7 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
                     let n = number_unary(operator, &right)?;
                     Ok(Value::Number(-n))
                 }
+                TokenType::NOT => Ok(Value::Boolean(!is_truthy(&right))),
 
                 // add an error here for a unsupported operator
                 _ => todo!()
@@ -89,11 +91,37 @@ fn number_unary(operator: &Token, value: &Value) -> Result<f64, RuntimeError>{
 }
 
 
-// Evaluates operands left to right, then applies arithmetic, numeric ordering, or strict equality.
-// Ordering accepts numbers/booleans; equality accepts every Value variant without coercion.
+// Accepts any runtime Value; nil, false, zero (including -0.0), and empty strings are falsey.
+// Nonzero numbers and nonempty strings (including whitespace) are truthy without conversion.
+fn is_truthy(value: &Value) -> bool {
+    match value {
+        Value::Nil => false,
+        Value::Boolean(b) => *b,
+        Value::Number(n) => *n != 0.0,
+        Value::String(s) => !s.is_empty(),
+    }
+}
+
+// Evaluates left first; logical operators accept all values and skip right when left decides the result.
+// Other operators evaluate both sides, then apply arithmetic, numeric ordering, or strict equality.
 fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value, RuntimeError> {
  
     let l = evaluate(left)?;
+    match operator.token_type {
+        TokenType::AT => {
+            if !is_truthy(&l) {
+                return Ok(Value::Boolean(false));
+            }
+            return Ok(Value::Boolean(is_truthy(&evaluate(right)?)));
+        }
+        TokenType::OKAYA => {
+            if is_truthy(&l) {
+                return Ok(Value::Boolean(true));
+            }
+            return Ok(Value::Boolean(is_truthy(&evaluate(right)?)));
+        }
+        _ => {}
+    }
     let r = evaluate(right)?;
  
     match operator.token_type {
