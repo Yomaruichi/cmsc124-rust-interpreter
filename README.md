@@ -214,21 +214,20 @@ true.]
 
 ### Operator semantics
 
-Coercion Data Type Hierarchy
-Nil -> Boolean -> Number -> String
+Arithmetic uses operator-specific coercion rather than a universal type hierarchy.
 
-- Arithmetic: [accepted operand types]
-- `+` on strings: [concatenation, error, or coercion]
+| Operator | Accepted values | Behavior |
+|---|---|---|
+| `+` | Numbers, booleans, strings | Concatenates if either operand is a string; otherwise adds numerically. |
+| `-`, `*`, `/`, `%` | Numbers and booleans | Converts booleans to numbers and performs numeric arithmetic. |
+| Unary `-` | Number or boolean | Converts a boolean to a number, then negates it. |
 
-- String + String -> String (concatenation and only for `+`)
-- Boolean + Boolean -> Number (for all basic arithmetic op)
-- Number + Number  -> Number (for all basic arithmetic op)
-
-- Mixed types: coercion happens, the lower data type in the hierarchy will be promoted to the highest data type
-
-- Comparison: [accepted operand types]
-- Equality across types: [false, or an error]
-- Division by zero: [value produced, or runtime error]
+- Boolean arithmetic uses `totoo = 1` and `mali = 0`; numeric operations return numbers.
+- `wala` (nil) is rejected in all arithmetic, including string concatenation, with a runtime error (exit 70).
+- String concatenation uses runtime printing: `"score: " + 2` produces `"score: 2"`, and `"ready: " + totoo` produces `"ready: true"`.
+- Strings are not parsed as numbers: `"5" - 2` is a runtime error.
+- Division and modulo by zero are runtime errors (exit 70), including a divisor of `mali` after conversion to zero.
+- Examples: `totoo + 2` produces `3`; `totoo % 2` produces `1`; `-totoo` produces `-1`.
 
 ### Scope and bindings
 

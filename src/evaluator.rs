@@ -2,7 +2,7 @@ mod coercion;
 
 use crate::ast::{Expr, Program};
 use crate::token::{Token, TokenType, Value};
-use crate::evaluator::coercion::{Rank, promote, coerceValue};
+use crate::evaluator::coercion::coerce_number;
  
 
  
@@ -84,14 +84,13 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
  
 
 
+// Converts a number or boolean operand to f64 for unary minus; strings and nil are rejected.
 fn number_unary(operator: &Token, value: &Value) -> Result<f64, RuntimeError>{
-    match value {
-        Value::Number(n) => Ok(*n),
-        _ => Err(RuntimeError::new(operator, "Operand must be a number.")),
-    }
+    coerce_number(operator, value)
 }
 
 
+// Evaluates two expression operands for arithmetic; only + accepts strings, and nil is rejected.
 fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value, RuntimeError> {
  
     let l = evaluate(left)?;
@@ -101,107 +100,45 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
         
      
         TokenType::MINUS => {
-            let (mut a, mut b, target) = promote(&l, &r);
-
-            //check if one of the operands is boolean
-            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
-                // Either a or b (or both) is a Boolean
-                a = coerceValue(&a, Rank::Number);
-                b = coerceValue(&b, Rank::Number);
-            }
-            
-            match (a, b) {
-                (Value::Number(x), Value::Number(y)) => {
-                    Ok(Value::Number(x - y))
-                }
-                _ => {
-                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
-                }
-            }
+            let (a, b) = number_operands(operator, &l, &r)?;
+            Ok(Value::Number(a - b))
         }
         TokenType::STAR => {
-            let (mut a, mut b, target) = promote(&l, &r);
-
-            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
-                // Either a or b (or both) is a Boolean
-                a = coerceValue(&a, Rank::Number);
-                b = coerceValue(&b, Rank::Number);
-            }
-
-            match (a, b) {
-                (Value::Number(x), Value::Number(y)) => {
-                    Ok(Value::Number(x * y))
-                }
-                _ => {
-                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
-                }
-            }
+            let (a, b) = number_operands(operator, &l, &r)?;
+            Ok(Value::Number(a * b))
         }
         TokenType::SLASH => {
-            let (mut a, mut b, target) = promote(&l, &r);
-
-            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
-                // Either a or b (or both) is a Boolean
-                a = coerceValue(&a, Rank::Number);
-                b = coerceValue(&b, Rank::Number);
+            let (a, b) = number_operands(operator, &l, &r)?;
+            if b == 0.0 {
+                return Err(RuntimeError::new(operator, "Division by zero."));
             }
-
-            match (a, b) {
-                (Value::Number(x), Value::Number(y)) => {
-                    if (y == 0.0) { //check if divide by zero
-                        Err(RuntimeError::new(operator, "cant divide by zero"))
-                    } else {
-                        Ok(Value::Number(x / y))
-                    }
-                    
-                }
-                _ => {
-                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
-                }
-            }
+            Ok(Value::Number(a / b))
         }
 
-        
         TokenType::MODULO => {
             let (a, b) = number_operands(operator, &l, &r)?;
-            if (b == 0.0) {
+            if b == 0.0 {
                 return Err(RuntimeError::new(operator, "Modulo by zero."));
             }
             Ok(Value::Number(a % b))
         }
 
-        // implement concatenation, numeric addition, and boolean addition
         TokenType::PLUS => {
-            let (mut a, mut b, target) = promote(&l, &r);
-            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
-                // Either a or b (or both) is a Boolean
-                a = coerceValue(&a, Rank::Number);
-                b = coerceValue(&b, Rank::Number);
-                
+            if matches!(l, Value::Nil) || matches!(r, Value::Nil) {
+                return Err(RuntimeError::new(operator, "Nil cannot be used in arithmetic."));
             }
-
-            match (a, b) {
-                (Value::Number(a), Value::Number(b)) => {
-                    Ok(Value::Number(a + b))
-                }
-                (Value::String(a), Value::String(b)) => {
-                    Ok(Value::String(a + &b))
-                }
-
-                _ => Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),)),
+            if matches!(l, Value::String(_)) || matches!(r, Value::String(_)) {
+                return Ok(Value::String(stringify(&l) + &stringify(&r)));
             }
+            let (a, b) = number_operands(operator, &l, &r)?;
+            Ok(Value::Number(a + b))
         },
- 
-
 
         (_) => todo!()
     }
 }
 
-//used for binary pattern
+// Converts two number or boolean operands to f64; strings and nil produce a runtime error.
 fn number_operands(operator: &Token, left: &Value, right: &Value) -> Result<(f64, f64), RuntimeError> {
-    match (left, right) {
-        (Value::Number(a), Value::Number(b)) => Ok((*a, *b)),
-        _ => Err(RuntimeError::new(operator, "Operands must be numbers.")),
-    }
+    Ok((coerce_number(operator, left)?, coerce_number(operator, right)?))
 }

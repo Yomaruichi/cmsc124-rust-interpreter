@@ -1,0 +1,2 @@
+// Invalid arithmetic reports a runtime error instead of coercing silently.
+wala * totoo; // expect runtime error: Nil cannot be used in arithmetic.
