@@ -142,8 +142,8 @@ fn run_repl() {
 
         let mut parser = Parser::new(tokens);
         if let Ok(program) = parser.parse_program() {
-            for expr in &program.expressions {
-                println!("{}", ast::print(expr));
+            if let Err(e) = evaluator::interpret(program) {
+                evaluator::report_runtime_error(&e);
             }
         }
     }
