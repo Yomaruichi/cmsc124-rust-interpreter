@@ -150,13 +150,11 @@ x | y | z | ... -> can choose either of the 3 or ...n
 
 
 ```
-program     → <statement> EOF
-
-statement -> <if_else_stmt> | <loop_stmt> | <expression> | <func_stmt> | <default>
-
-if_else_stmt -> <if> "(" <expression> ")" "{" <default> "}" [*an else statement/multiple else ifs then an else?]
+program → ( expression ";" )* EOF
 
 ```
+
+`Parser::parse_program()` returns the `Program` root. Its `expressions` field contains each semicolon-terminated expression in source order; an empty file produces an empty list. `--parse` prints one expression tree per line.
 
 ```
 expression → logic_or
@@ -165,7 +163,7 @@ logic_and → equality ( "at" equality )*
 equality → comparison ( ( "!=" | "==" ) comparison )*
 comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
 term → factor ( ( "-" | "+" ) factor )*
-factor → unary ( ( "/" | "" | "%" ) unary )
+factor → unary ( ( "/" | "*" | "%" ) unary )*
 unary → ( "!" | "-" ) unary | primary
 primary → NUMBER | STRING | "totoo" | "mali" | "wala" | "(" expression ")"
 ```

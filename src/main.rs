@@ -74,8 +74,8 @@ fn run_parse(path: &str) -> ExitCode {
 
     let mut parser: Parser = Parser::new(tokens);
     match parser.parse_program() {
-        Ok(exprs) => {
-            for expr in exprs {
+        Ok(program) => {
+            for expr in &program.expressions {
                 println!("{}", ast::print(expr));
             }
             ExitCode::from(0)
@@ -102,12 +102,12 @@ fn run_evaluate(path: &str) -> ExitCode {
     }
  
     let mut parser = Parser::new(tokens);
-    let exprs = match parser.parse_program() {
-        Ok(exprs) => exprs,
+    let program = match parser.parse_program() {
+        Ok(program) => program,
         Err(_) => return ExitCode::from(65), // messages already on stderr
     };
  
-    match evaluator::interpret(exprs) { // this returns a value already, thats why match is used
+    match evaluator::interpret(program) { // this returns a value already, thats why match is used
         Ok(()) => ExitCode::from(0),
         Err(e) => {
             evaluator::report_runtime_error(&e); //prints out the error itself
@@ -141,8 +141,8 @@ fn run_repl() {
         }
 
         let mut parser = Parser::new(tokens);
-        if let Ok(exprs) = parser.parse_program() {
-            for expr in exprs {
+        if let Ok(program) = parser.parse_program() {
+            for expr in &program.expressions {
                 println!("{}", ast::print(expr));
             }
         }

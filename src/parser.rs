@@ -1,9 +1,9 @@
-use crate::ast::Expr;
+use crate::ast::{Expr, Program};
 use crate::token::{Token, TokenType, Value};
 
 pub struct Parser {
     tokens: Vec<Token>,
-    expressions: Vec<Expr>,
+    program: Program,
     current: usize,
     pub had_error: bool,
 }
@@ -12,7 +12,7 @@ pub struct ParseError;
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, expressions: Vec::new(), current: 0, had_error: false }
+        Parser { tokens, program: Program { expressions: Vec::new() }, current: 0, had_error: false }
     }
 
     // ---- six helpers, token-level equivalents of the scanner's ----
@@ -137,17 +137,17 @@ impl Parser {
     }
 
     // program → ( expression ";" )* EOF
-    pub fn parse_program(&mut self) -> Result<&Vec<Expr>, ParseError> {
+    pub fn parse_program(&mut self) -> Result<&Program, ParseError> {
         while !self.is_at_end() {
             match self.expression_statement() {
-                Ok(expr) => self.expressions.push(expr),
+                Ok(expr) => self.program.expressions.push(expr),
                 Err(_) => self.synchronize(), // error already printed by Parser::error
             }
         }
         if self.had_error {
             Err(ParseError)
         } else {
-            Ok(&self.expressions)
+            Ok(&self.program)
         }
     }
 

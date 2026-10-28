@@ -1,5 +1,11 @@
 use crate::token::{Token, Value};
 
+/// Root of the tree: one entry per ';'-terminated expression, in file order.
+#[derive(Debug, Clone)]
+pub struct Program {
+    pub expressions: Vec<Expr>,
+}
+
 #[derive(Debug, Clone)]
 pub enum Expr {
     Literal(Value),

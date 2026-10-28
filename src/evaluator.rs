@@ -1,4 +1,4 @@
-use crate::ast::Expr;
+use crate::ast::{Expr, Program};
 use crate::token::{Token, TokenType, Value};
  
 
@@ -24,8 +24,8 @@ pub fn report_runtime_error(err: &RuntimeError) {
  
 
 // main entry point: evaluate each expression and print its result
-pub fn interpret(exprs: &[Expr]) -> Result<(), RuntimeError> {
-    for expr in exprs {
+pub fn interpret(program: &Program) -> Result<(), RuntimeError> {
+    for expr in &program.expressions {
         let value = evaluate(expr)?;
         println!("{}", stringify(&value));
     }
