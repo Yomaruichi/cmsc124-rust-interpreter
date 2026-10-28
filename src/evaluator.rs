@@ -48,8 +48,7 @@ pub fn stringify(value: &Value) -> String {
     }
 }
 
-
-//main evalauator for expressions
+// Literals and grouping preserve their values; operator expressions dispatch to their type rules.
 pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
 
     // evaluate each enum type
@@ -90,7 +89,8 @@ fn number_unary(operator: &Token, value: &Value) -> Result<f64, RuntimeError>{
 }
 
 
-// Evaluates two expression operands for arithmetic; only + accepts strings, and nil is rejected.
+// Evaluates operands left to right, then applies arithmetic, numeric ordering, or strict equality.
+// Ordering accepts numbers/booleans; equality accepts every Value variant without coercion.
 fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value, RuntimeError> {
  
     let l = evaluate(left)?;
@@ -134,11 +134,29 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
             Ok(Value::Number(a + b))
         },
 
+        TokenType::GREATER | TokenType::GREATEREQUAL | TokenType::LESS | TokenType::LESSEQUAL => {
+            if matches!(l, Value::Nil) || matches!(r, Value::Nil) {
+                return Err(RuntimeError::new(operator, "Nil cannot be used in comparisons."));
+            }
+            let (a, b) = number_operands(operator, &l, &r)?;
+            let result = match operator.token_type {
+                TokenType::GREATER => a > b,
+                TokenType::GREATEREQUAL => a >= b,
+                TokenType::LESS => a < b,
+                _ => a <= b, // This arm can only be LESSEQUAL after the outer match.
+            };
+            Ok(Value::Boolean(result))
+        }
+        // Value's derived PartialEq compares both enum variant and contained value.
+        TokenType::EQUALEQUAL => Ok(Value::Boolean(l == r)),
+        TokenType::NOTEQUAL => Ok(Value::Boolean(l != r)),
+
         (_) => todo!()
     }
 }
 
 // Converts two number or boolean operands to f64; strings and nil produce a runtime error.
+// Shared by arithmetic and ordering so boolean conversion stays consistent (true = 1, false = 0).
 fn number_operands(operator: &Token, left: &Value, right: &Value) -> Result<(f64, f64), RuntimeError> {
     Ok((coerce_number(operator, left)?, coerce_number(operator, right)?))
 }

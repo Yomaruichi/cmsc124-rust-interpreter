@@ -1,0 +1,17 @@
+// Ordering converts booleans to numbers and returns booleans at each boundary.
+3 > 2; // expect: true
+2 > 2; // expect: false
+2 >= 2; // expect: true
+1 >= 2; // expect: false
+1 < 2; // expect: true
+2 < 2; // expect: false
+2 <= 2; // expect: true
+3 <= 2; // expect: false
+totoo <= 1; // expect: true
+0 < totoo; // expect: true
+mali < totoo; // expect: true
+totoo > mali; // expect: true
+-2 < -1; // expect: true
+2.5 >= 2.4; // expect: true
+1 + 2 > 2 * 1; // expect: true
+3 > 2 > 1; // expect: false

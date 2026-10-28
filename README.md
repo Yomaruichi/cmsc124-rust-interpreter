@@ -229,6 +229,15 @@ Arithmetic uses operator-specific coercion rather than a universal type hierarch
 - Division and modulo by zero are runtime errors (exit 70), including a divisor of `mali` after conversion to zero.
 - Examples: `totoo + 2` produces `3`; `totoo % 2` produces `1`; `-totoo` produces `-1`.
 
+### Comparison and equality
+
+- `<`, `<=`, `>`, and `>=` accept numbers and booleans, converting `totoo` to `1` and `mali` to `0`. Strings and nil produce a runtime error (exit 70).
+- `==` and `!=` accept all values without coercion. Values of different types are unequal; same-type values are compared directly. String equality is case-sensitive and compares contents; numbers use exact floating-point equality.
+- `wala == wala` is `true`; `wala == mali`, `totoo == 1`, and `"3" == 3` are `false`. `!=` negates equality.
+- All six operators return booleans. For example, `3 > 2` and `totoo <= 1` are `true`, even though `totoo == 1` is `false`.
+- Comparisons associate left to right rather than forming mathematical chains: `3 > 2 > 1` means `(3 > 2) > 1`, which is `false` because the first result converts to `1`.
+- Logical operators (`!`, `at`, `okaya`) and truthiness are not implemented yet.
+
 ### Scope and bindings
 
 - Redeclaration in the same scope: [allowed or an error]
