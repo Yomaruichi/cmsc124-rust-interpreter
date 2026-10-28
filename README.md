@@ -214,9 +214,18 @@ true.]
 
 ### Operator semantics
 
+Coercion Data Type Hierarchy
+Nil -> Boolean -> Number -> String
+
 - Arithmetic: [accepted operand types]
 - `+` on strings: [concatenation, error, or coercion]
-- Mixed types: [what happens]
+
+- String + String -> String (concatenation and only for `+`)
+- Boolean + Boolean -> Number (for all basic arithmetic op)
+- Number + Number  -> Number (for all basic arithmetic op)
+
+- Mixed types: coercion happens, the lower data type in the hierarchy will be promoted to the highest data type
+
 - Comparison: [accepted operand types]
 - Equality across types: [false, or an error]
 - Division by zero: [value produced, or runtime error]

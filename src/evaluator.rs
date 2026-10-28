@@ -1,5 +1,8 @@
+mod coercion;
+
 use crate::ast::{Expr, Program};
 use crate::token::{Token, TokenType, Value};
+use crate::evaluator::coercion::{Rank, promote, coerceValue};
  
 
  
@@ -39,6 +42,8 @@ pub fn interpret(program: &Program) -> Result<(), RuntimeError> {
 pub fn stringify(value: &Value) -> String {
     match value {
         Value::Number(n) => n.to_string(),
+        Value::Boolean(n) => n.to_string(),
+        Value::Nil => "nil".to_string(),
         other => other.to_string(),
     }
 }
@@ -93,22 +98,70 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
     let r = evaluate(right)?;
  
     match operator.token_type {
+        
      
         TokenType::MINUS => {
-            let (a, b) = number_operands(operator, &l, &r)?;
-            Ok(Value::Number(a - b))
+            let (mut a, mut b, target) = promote(&l, &r);
+
+            //check if one of the operands is boolean
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
+            }
+            
+            match (a, b) {
+                (Value::Number(x), Value::Number(y)) => {
+                    Ok(Value::Number(x - y))
+                }
+                _ => {
+                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
+                }
+            }
         }
         TokenType::STAR => {
-            let (a, b) = number_operands(operator, &l, &r)?;
-            Ok(Value::Number(a * b))
+            let (mut a, mut b, target) = promote(&l, &r);
+
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
+            }
+
+            match (a, b) {
+                (Value::Number(x), Value::Number(y)) => {
+                    Ok(Value::Number(x * y))
+                }
+                _ => {
+                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
+                }
+            }
         }
         TokenType::SLASH => {
-            let (a, b) = number_operands(operator, &l, &r)?;
-            if (b == 0.0) {
-                return Err(RuntimeError::new(operator, "Division by zero."));
+            let (mut a, mut b, target) = promote(&l, &r);
+
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
             }
-            Ok(Value::Number(a / b))
+
+            match (a, b) {
+                (Value::Number(x), Value::Number(y)) => {
+                    if (y == 0.0) { //check if divide by zero
+                        Err(RuntimeError::new(operator, "cant divide by zero"))
+                    } else {
+                        Ok(Value::Number(x / y))
+                    }
+                    
+                }
+                _ => {
+                    Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),))
+                }
+            }
         }
+
+        
         TokenType::MODULO => {
             let (a, b) = number_operands(operator, &l, &r)?;
             if (b == 0.0) {
@@ -116,12 +169,31 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
             }
             Ok(Value::Number(a % b))
         }
-        TokenType::PLUS => match (&l, &r) {
-            (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
- 
-            _ => Err(RuntimeError::new(operator, "Operands must be two numbers.")),
+
+        // implement concatenation, numeric addition, and boolean addition
+        TokenType::PLUS => {
+            let (mut a, mut b, target) = promote(&l, &r);
+            if matches!(a, Value::Boolean(_)) || matches!(b, Value::Boolean(_)) {
+                // Either a or b (or both) is a Boolean
+                a = coerceValue(&a, Rank::Number);
+                b = coerceValue(&b, Rank::Number);
+                
+            }
+
+            match (a, b) {
+                (Value::Number(a), Value::Number(b)) => {
+                    Ok(Value::Number(a + b))
+                }
+                (Value::String(a), Value::String(b)) => {
+                    Ok(Value::String(a + &b))
+                }
+
+                _ => Err(RuntimeError::new(operator, &format!("Operands of type {:?} can't be added.", target),)),
+            }
         },
  
+
+
         (_) => todo!()
     }
 }
