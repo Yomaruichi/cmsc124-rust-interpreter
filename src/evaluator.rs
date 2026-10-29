@@ -49,7 +49,7 @@ pub fn stringify(value: &Value) -> String {
 }
 
 // Evaluates an expression tree, preserving literal/grouped values and propagating runtime errors.
-// Unary ! accepts any Value through truthiness; unary minus accepts numbers and booleans.
+// Unary ! accepts any Value through truthiness; unary minus accepts numbers only.
 pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
 
     // evaluate each enum type
@@ -85,7 +85,7 @@ pub fn evaluate(expr: &Expr) -> Result<Value, RuntimeError> {
  
 
 
-// Converts a number or boolean operand to f64 for unary minus; strings and nil are rejected.
+// Extracts a numeric operand for unary minus; every non-number produces a runtime error.
 fn number_unary(operator: &Token, value: &Value) -> Result<f64, RuntimeError>{
     coerce_number(operator, value)
 }
@@ -183,8 +183,8 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr) -> Result<Value,
     }
 }
 
-// Converts two number or boolean operands to f64; strings and nil produce a runtime error.
-// Shared by arithmetic and ordering so boolean conversion stays consistent (true = 1, false = 0).
+// Extracts two numeric operands for arithmetic and ordering; no boolean conversion is performed.
+// The operator token preserves the source line when either value fails the shared type check.
 fn number_operands(operator: &Token, left: &Value, right: &Value) -> Result<(f64, f64), RuntimeError> {
     Ok((coerce_number(operator, left)?, coerce_number(operator, right)?))
 }
