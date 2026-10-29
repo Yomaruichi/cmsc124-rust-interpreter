@@ -1,2 +1,2 @@
 // Invalid arithmetic reports a runtime error instead of coercing silently.
-2 % "5"; // expect runtime error: Operand must be a number or boolean.
+2 % "5"; // expect runtime error: Operand must be a number.

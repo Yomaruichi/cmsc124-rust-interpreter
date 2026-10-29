@@ -1,10 +1,2 @@
-// Booleans act as 1 or 0 across arithmetic operators.
-totoo + 2; // expect: 3
-2 + totoo; // expect: 3
-totoo + totoo; // expect: 2
-2 - totoo; // expect: 1
-totoo * 3; // expect: 3
-4 / totoo; // expect: 4
-totoo % 2; // expect: 1
--totoo; // expect: -1
--mali; // expect: -0
+// Numeric addition rejects a boolean instead of converting it to 1.
+totoo + 2; // expect runtime error: Operand must be a number.

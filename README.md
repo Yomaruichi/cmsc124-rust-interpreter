@@ -219,24 +219,24 @@ Arithmetic uses operator-specific coercion rather than a universal type hierarch
 
 | Operator | Accepted values | Behavior |
 |---|---|---|
-| `+` | Numbers, booleans, strings | Concatenates if either operand is a string; otherwise adds numerically. |
-| `-`, `*`, `/`, `%` | Numbers and booleans | Converts booleans to numbers and performs numeric arithmetic. |
-| Unary `-` | Number or boolean | Converts a boolean to a number, then negates it. |
+| `+` | Two numbers, or a string paired with a non-nil value | Concatenates if either operand is a string; otherwise requires two numbers. |
+| `-`, `*`, `/`, `%` | Two numbers | Performs numeric arithmetic without coercion. |
+| Unary `-` | Number | Negates the number; rejects every other type. |
 
-- Boolean arithmetic uses `totoo = 1` and `mali = 0`; numeric operations return numbers.
+- Booleans are not numbers: numeric arithmetic and ordering reject them with a runtime error (exit 70). String concatenation can still print a boolean.
 - `wala` (nil) is rejected in all arithmetic, including string concatenation, with a runtime error (exit 70).
 - String concatenation uses runtime printing: `"score: " + 2` produces `"score: 2"`, and `"ready: " + totoo` produces `"ready: true"`.
 - Strings are not parsed as numbers: `"5" - 2` is a runtime error.
-- Division and modulo by zero are runtime errors (exit 70), including a divisor of `mali` after conversion to zero.
-- Examples: `totoo + 2` produces `3`; `totoo % 2` produces `1`; `-totoo` produces `-1`.
+- Division and modulo by numeric zero are runtime errors (exit 70). A boolean divisor is rejected as the wrong type.
+- Examples: `totoo + 2`, `totoo % 2`, and `-totoo` are runtime type errors. `"ready: " + totoo` produces `"ready: true"`.
 
 ### Comparison and equality
 
-- `<`, `<=`, `>`, and `>=` accept numbers and booleans, converting `totoo` to `1` and `mali` to `0`. Strings and nil produce a runtime error (exit 70).
+- `<`, `<=`, `>`, and `>=` require two numbers. Booleans, strings, and nil produce a runtime error (exit 70).
 - `==` and `!=` accept all values without coercion. Values of different types are unequal; same-type values are compared directly. String equality is case-sensitive and compares contents; numbers use exact floating-point equality.
 - `wala == wala` is `true`; `wala == mali`, `totoo == 1`, and `"3" == 3` are `false`. `!=` negates equality.
-- All six operators return booleans. For example, `3 > 2` and `totoo <= 1` are `true`, even though `totoo == 1` is `false`.
-- Comparisons associate left to right rather than forming mathematical chains: `3 > 2 > 1` means `(3 > 2) > 1`, which is `false` because the first result converts to `1`.
+- All six operators return booleans. `3 > 2` is `true`; `totoo <= 1` is a runtime error, while `totoo == 1` remains `false`.
+- Comparisons associate left to right rather than forming mathematical chains: `3 > 2 > 1` means `(3 > 2) > 1` and raises a runtime error because the intermediate result is a boolean. Use `3 > 2 at 2 > 1` for a range-style check.
 
 ### Logical operators
 

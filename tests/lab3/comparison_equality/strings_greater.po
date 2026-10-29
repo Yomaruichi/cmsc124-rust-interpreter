@@ -1,2 +1,2 @@
 // Invalid operands report a runtime error instead of panicking.
-"a" > "b"; // expect runtime error: Operand must be a number or boolean.
+"a" > "b"; // expect runtime error: Operand must be a number.

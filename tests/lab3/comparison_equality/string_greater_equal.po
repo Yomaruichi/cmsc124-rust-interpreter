@@ -1,2 +1,2 @@
 // Invalid operands report a runtime error instead of panicking.
-2 >= "3"; // expect runtime error: Operand must be a number or boolean.
+2 >= "3"; // expect runtime error: Operand must be a number.

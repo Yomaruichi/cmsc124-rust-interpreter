@@ -1,0 +1,2 @@
+// Ordering requires numbers, including when an earlier comparison returns a boolean.
+totoo <= 1; // expect runtime error: Operand must be a number.

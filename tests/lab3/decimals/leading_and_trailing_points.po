@@ -1,0 +1,4 @@
+// Leading and trailing decimal points remain valid for a single literal.
+.5; // expect: 0.5
+5.; // expect: 5
+1.2; // expect: 1.2
