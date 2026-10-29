@@ -1,0 +1,22 @@
+// Equality checks type and value without numeric or string coercion.
+3 == 3; // expect: true
+3 != 3; // expect: false
+3 == 4; // expect: false
+3 != 4; // expect: true
+"hi" == "hi"; // expect: true
+"hi" != "Hi"; // expect: true
+totoo == totoo; // expect: true
+totoo == mali; // expect: false
+wala == wala; // expect: true
+wala != wala; // expect: false
+totoo == 1; // expect: false
+totoo != 1; // expect: true
+mali == 0; // expect: false
+"3" == 3; // expect: false
+3 == "3"; // expect: false
+wala == mali; // expect: false
+wala == 0; // expect: false
+wala == "nil"; // expect: false
+"true" == totoo; // expect: false
+(1 < 2) == totoo; // expect: true
+1 + 2 == 3; // expect: true

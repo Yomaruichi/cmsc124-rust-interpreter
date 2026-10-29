@@ -1,0 +1,2 @@
+// Numeric arithmetic rejects boolean operands without coercion.
+totoo % 2; // expect runtime error: Operand must be a number.

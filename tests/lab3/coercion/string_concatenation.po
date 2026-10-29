@@ -1,0 +1,6 @@
+// Either operand being a string makes + concatenate printed values.
+"score: " + 2; // expect: score: 2
+2 + " points"; // expect: 2 points
+"ready: " + totoo; // expect: ready: true
+mali + "!"; // expect: false!
+"a" + "b"; // expect: ab

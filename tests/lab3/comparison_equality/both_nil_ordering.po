@@ -1,0 +1,2 @@
+// Invalid operands report a runtime error instead of panicking.
+wala < wala; // expect runtime error: Nil cannot be used in comparisons.

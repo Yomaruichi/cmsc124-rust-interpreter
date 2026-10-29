@@ -1,0 +1,2 @@
+// Numeric addition rejects a boolean instead of converting it to 1.
+totoo + 2; // expect runtime error: Operand must be a number.

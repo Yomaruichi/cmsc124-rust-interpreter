@@ -1,0 +1,2 @@
+// Errors propagate when the operand must actually be evaluated.
+(1 / 0) okaya totoo; // expect runtime error: Division by zero.

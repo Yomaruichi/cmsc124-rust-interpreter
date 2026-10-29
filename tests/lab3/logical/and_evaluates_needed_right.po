@@ -1,0 +1,2 @@
+// Errors propagate when the operand must actually be evaluated.
+totoo at (1 / 0); // expect runtime error: Division by zero.

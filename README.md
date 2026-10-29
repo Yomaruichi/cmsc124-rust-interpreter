@@ -150,13 +150,11 @@ x | y | z | ... -> can choose either of the 3 or ...n
 
 
 ```
-program     → <statement> EOF
-
-statement -> <if_else_stmt> | <loop_stmt> | <expression> | <func_stmt> | <default>
-
-if_else_stmt -> <if> "(" <expression> ")" "{" <default> "}" [*an else statement/multiple else ifs then an else?]
+program → ( expression ";" )* EOF
 
 ```
+
+`Parser::parse_program()` returns the `Program` root. Its `expressions` field contains each semicolon-terminated expression in source order; an empty file produces an empty list. `--parse` prints one expression tree per line.
 
 ```
 expression → logic_or
@@ -165,7 +163,7 @@ logic_and → equality ( "at" equality )*
 equality → comparison ( ( "!=" | "==" ) comparison )*
 comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
 term → factor ( ( "-" | "+" ) factor )*
-factor → unary ( ( "/" | "" | "%" ) unary )
+factor → unary ( ( "/" | "*" | "%" ) unary )*
 unary → ( "!" | "-" ) unary | primary
 primary → NUMBER | STRING | "totoo" | "mali" | "wala" | "(" expression ")"
 ```
@@ -211,17 +209,43 @@ language.]
 
 ### Truthiness
 
-[The complete rule. Which values are false in a condition; everything else is
-true.]
+- Falsey values: `mali`, `wala`, numeric zero (including `-0.0`), and the empty string `""`.
+- Truthy values: `totoo`, all nonzero numbers, and all nonempty strings. Whitespace-only strings such as `" "` are truthy; strings are not trimmed or parsed as numbers.
+- Truthiness does not change a value's type or the strict equality rules.
 
 ### Operator semantics
 
-- Arithmetic: [accepted operand types]
-- `+` on strings: [concatenation, error, or coercion]
-- Mixed types: [what happens]
-- Comparison: [accepted operand types]
-- Equality across types: [false, or an error]
-- Division by zero: [value produced, or runtime error]
+Arithmetic uses operator-specific coercion rather than a universal type hierarchy.
+
+| Operator | Accepted values | Behavior |
+|---|---|---|
+| `+` | Two numbers, or a string paired with a non-nil value | Concatenates if either operand is a string; otherwise requires two numbers. |
+| `-`, `*`, `/`, `%` | Two numbers | Performs numeric arithmetic without coercion. |
+| Unary `-` | Number | Negates the number; rejects every other type. |
+
+- Booleans are not numbers: numeric arithmetic and ordering reject them with a runtime error (exit 70). String concatenation can still print a boolean.
+- `wala` (nil) is rejected in all arithmetic, including string concatenation, with a runtime error (exit 70).
+- String concatenation uses runtime printing: `"score: " + 2` produces `"score: 2"`, and `"ready: " + totoo` produces `"ready: true"`.
+- Strings are not parsed as numbers: `"5" - 2` is a runtime error.
+- Division and modulo by numeric zero are runtime errors (exit 70). A boolean divisor is rejected as the wrong type.
+- Examples: `totoo + 2`, `totoo % 2`, and `-totoo` are runtime type errors. `"ready: " + totoo` produces `"ready: true"`.
+
+### Comparison and equality
+
+- `<`, `<=`, `>`, and `>=` require two numbers. Booleans, strings, and nil produce a runtime error (exit 70).
+- `==` and `!=` accept all values without coercion. Values of different types are unequal; same-type values are compared directly. String equality is case-sensitive and compares contents; numbers use exact floating-point equality.
+- `wala == wala` is `true`; `wala == mali`, `totoo == 1`, and `"3" == 3` are `false`. `!=` negates equality.
+- All six operators return booleans. `3 > 2` is `true`; `totoo <= 1` is a runtime error, while `totoo == 1` remains `false`.
+- Comparisons associate left to right rather than forming mathematical chains: `3 > 2 > 1` means `(3 > 2) > 1` and raises a runtime error because the intermediate result is a boolean. Use `3 > 2 at 2 > 1` for a range-style check.
+
+### Logical operators
+
+- `!value` returns the opposite of the value's truthiness; for example, `!0` and `!""` are `true`.
+- `left at right` returns `false` without evaluating `right` when `left` is falsey; otherwise it evaluates `right` and returns its truthiness.
+- `left okaya right` returns `true` without evaluating `right` when `left` is truthy; otherwise it evaluates `right` and returns its truthiness.
+- All three operators accept every runtime type and return booleans, rather than returning an operand.
+- Short-circuiting skips runtime work and errors: `0 at (1 / 0)` returns `false`, and `"yes" okaya (1 / 0)` returns `true`. Errors in operands that are evaluated still propagate normally. Both operands must still be syntactically valid.
+- `!` binds tighter than `at`, which binds tighter than `okaya`.
 
 ### Scope and bindings
 
@@ -232,7 +256,7 @@ true.]
 
 ### Control flow and functions
 
-- Logical operators return: [booleans, or the operand]
+- Logical operators return booleans using the truthiness and short-circuit rules above.
 - Dangling else binds to: [which if]
 - Closure capture of a loop variable: [per iteration, or shared]
 - Function with no return statement produces: [value]

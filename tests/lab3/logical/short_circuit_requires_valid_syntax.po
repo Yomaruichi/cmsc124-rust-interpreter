@@ -1,0 +1,2 @@
+// Skipping evaluation does not skip parsing the right operand.
+mali at (1 + ); // expect error: Expect expression.

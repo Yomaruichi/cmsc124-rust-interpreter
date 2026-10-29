@@ -1,0 +1,19 @@
+// Logical operators return booleans for all combinations and mixed values.
+totoo at totoo; // expect: true
+totoo at mali; // expect: false
+mali at totoo; // expect: false
+mali at mali; // expect: false
+totoo okaya totoo; // expect: true
+totoo okaya mali; // expect: true
+mali okaya totoo; // expect: true
+mali okaya mali; // expect: false
+5 at "hello"; // expect: true
+5 at ""; // expect: false
+wala okaya 0; // expect: false
+"" okaya " "; // expect: true
+(5 at 2) == totoo; // expect: true
+(5 at 2) == 2; // expect: false
+(0 okaya 2) == totoo; // expect: true
+(0 okaya 2) == 2; // expect: false
+!0 at 2 > 1; // expect: true
+totoo okaya mali at mali; // expect: true

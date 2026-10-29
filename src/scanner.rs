@@ -66,26 +66,24 @@ impl Scanner {
         self.add_token_with_literal(TokenType::STRING, Value::String(value));
     }
 
-    // number token builder
+    // Scans digits with at most one decimal point; a trailing point remains valid (5.).
     fn number(&mut self) {
         while self.peek().is_ascii_digit() {
             self.advance();
         }
 
-        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
+        if self.peek() == '.' {
             self.advance();
             while self.peek().is_ascii_digit() {
                 self.advance();
             }
         }
 
-        if self.peek() == '.' && !self.peek_next().is_ascii_digit() {
-            self.advance();
-        }
-
         let text: String = self.source[self.start..self.current].iter().collect();
-        let value: f64 = text.parse().expect("scanned digits always form a valid f64");
-        self.add_token_with_literal(TokenType::NUMBER, Value::Number(value));
+        match text.parse::<f64>() {
+            Ok(value) => self.add_token_with_literal(TokenType::NUMBER, Value::Number(value)),
+            Err(_) => self.report(self.line, &format!("Invalid number '{}'.", text)),
+        }
     }
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
@@ -221,7 +219,10 @@ impl Scanner {
             '\n' => {self.line = self.line + 1}
             '"' => self.string(),
             '.' => {
-                    if self.peek().is_ascii_digit() {
+                    // A dot touching a previous number cannot start another decimal literal.
+                    if self.start > 0 && (self.source[self.start - 1].is_ascii_digit() || self.source[self.start - 1] == '.') {
+                        self.report(self.line, "Unexpected character '.'. A number can contain only one decimal point.");
+                    } else if self.peek().is_ascii_digit() {
                         self.leading_decimal_number();
                     } else {
                         self.unexpected_char(input);
@@ -333,8 +334,10 @@ fn leading_decimal_number(&mut self) {
     }
 
     let text: String = self.source[self.start..self.current].iter().collect();
-    let value: f64 = text.parse().unwrap_or(0.0);
-    self.add_token_with_literal(TokenType::NUMBER, Value::Number(value));
+    match text.parse::<f64>() {
+        Ok(value) => self.add_token_with_literal(TokenType::NUMBER, Value::Number(value)),
+        Err(_) => self.report(self.line, &format!("Invalid number '{}'.", text)),
+    }
 }
 
 }

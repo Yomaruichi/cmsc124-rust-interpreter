@@ -1,0 +1,15 @@
+// Negation exposes truthiness for every value type and zero/string boundaries.
+!mali; // expect: true
+!wala; // expect: true
+!0; // expect: true
+!-0.0; // expect: true
+!""; // expect: true
+!totoo; // expect: false
+!1; // expect: false
+!-2; // expect: false
+!0.001; // expect: false
+!" "; // expect: false
+!"0"; // expect: false
+!"false"; // expect: false
+!!5; // expect: true
+!!0; // expect: false

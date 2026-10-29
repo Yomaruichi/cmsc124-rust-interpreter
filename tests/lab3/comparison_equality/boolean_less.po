@@ -1,0 +1,2 @@
+// Ordering requires numbers, including when an earlier comparison returns a boolean.
+mali < 2; // expect runtime error: Operand must be a number.

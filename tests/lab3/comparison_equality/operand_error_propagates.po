@@ -1,0 +1,2 @@
+// Invalid operands report a runtime error instead of panicking.
+(1 / 0) == 0; // expect runtime error: Division by zero.

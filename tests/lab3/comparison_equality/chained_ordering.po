@@ -1,0 +1,2 @@
+// Ordering requires numbers, including when an earlier comparison returns a boolean.
+3 > 2 > 1; // expect runtime error: Operand must be a number.

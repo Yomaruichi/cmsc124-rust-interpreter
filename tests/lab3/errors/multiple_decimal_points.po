@@ -1,0 +1,2 @@
+// Extra decimal points must report a scanner error instead of panicking.
+1.2.3; // expect error: Unexpected character '.'.

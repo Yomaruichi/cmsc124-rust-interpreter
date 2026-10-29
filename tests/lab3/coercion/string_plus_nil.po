@@ -1,0 +1,2 @@
+// Invalid arithmetic reports a runtime error instead of coercing silently.
+"x" + wala; // expect runtime error: Nil cannot be used in arithmetic.

@@ -1,0 +1,10 @@
+// Decisive left operands skip a right operand that would raise a runtime error.
+mali at (1 / 0); // expect: false
+wala at (1 / 0); // expect: false
+0 at (1 / 0); // expect: false
+-0.0 at (1 / 0); // expect: false
+"" at (1 / 0); // expect: false
+totoo okaya (1 / 0); // expect: true
+2 okaya (1 / 0); // expect: true
+" " okaya (1 / 0); // expect: true
+mali at (totoo at (1 / 0)); // expect: false
