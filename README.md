@@ -198,14 +198,27 @@ output
 
 ### Values and types
 
-[What runtime values exist, and how they are represented in the host
-language.]
+TagaCode is dynamically typed. Runtime values are represented by Rust's `Value` enum:
+
+| Variant | Rust representation | TagaCode examples |
+|---|---|---|
+| Number | `f64` | `42`, `3.14`, `.5`, `5.` |
+| String | `String` | `"hello"`, `""` |
+| Boolean | `bool` | `totoo`, `mali` |
+| Nil | `Value::Nil`, with no stored payload | `wala` |
+
+Integer-looking and decimal literals both produce `Number` values. Negative numbers are formed by applying unary minus to a number expression.
 
 ### Value printing
 
-- Numbers: [e.g. 5 rather than 5.0]
-- Nil: [spelling]
-- Strings: [with or without quotes]
+- Numbers use Rust's `f64::to_string()`: `5.0` prints as `5`, while `2.5` prints as `2.5`. Negative zero can print as `-0`.
+- Booleans print as `true` or `false`, regardless of their source keywords.
+- Nil prints as `nil`.
+- Strings print their contents without surrounding quotes. Decoded newline escapes produce actual newlines.
+
+Each evaluated expression is printed followed by a newline.
+
+Runtime formatting is separate from token and AST formatting, where whole numbers retain `.0`.
 
 ### Truthiness
 
@@ -229,6 +242,18 @@ Arithmetic uses operator-specific coercion rather than a universal type hierarch
 - Strings are not parsed as numbers: `"5" - 2` is a runtime error.
 - Division and modulo by numeric zero are runtime errors (exit 70). A boolean divisor is rejected as the wrong type.
 - Examples: `totoo + 2`, `totoo % 2`, and `-totoo` are runtime type errors. `"ready: " + totoo` produces `"ready: true"`.
+
+### Evaluation order
+
+Ordinary binary expressions evaluate the left operand first, then the right operand, before applying the operator's type checks and operation. Unary expressions evaluate their operand before applying the operator.
+
+Logical `at` and `okaya` are exceptions: they evaluate the left operand first and evaluate the right operand only when needed to determine the result.
+
+Expressions in a program are evaluated in source order. A runtime error stops the current expression and prevents later expressions in that file from running; output already produced remains.
+
+Scanning and parsing finish before evaluation begins. A scanner or parser error therefore prevents all expressions in the file from being evaluated.
+
+In the REPL, a reported error returns control to the prompt so another line can be entered.
 
 ### Comparison and equality
 
@@ -291,6 +316,7 @@ Message format:
 ## Testing conventions
 
 
+
 | Folder | Activity | Mode | Flag |
 |---|---|---|---|
 | tests/lab1 | Scanner | sidecar | `--tokenize` |
@@ -299,6 +325,13 @@ Message format:
 | tests/lab4 | Context | inline | none |
 | tests/lab5 | Functions | inline | none |
 
+Lab 3 tests use inline annotations:
+
+- `// expect: <output>` checks evaluated output.
+- `// expect runtime error: <message>` checks a diagnostic and exit code 70.
+- `// expect error: <message>` checks rejection before execution and exit code 65.
+
+Error expectations contain the message without its line-number prefix. Each runtime-error test has one error case per file because evaluation stops at the first runtime failure.
 
 ```
 [specific tests]...
@@ -349,3 +382,4 @@ Output:
 |---|---|
 | Lab 1 | Initial lexical grammar: single- and two-character operators, single-line strings with `\n` `\"` `\\` escapes, integer and decimal literals, identifiers, 22 Tagalog keywords, `//` and nested `/* */` comments, `--tokenize` flag and REPL. |
 | Lab 2 | Expression grammar with seven precedence levels (`okaya`, `at`, equality, comparison, `+ -`, `* / %`, unary), all left-associative. Added the `%` operator, unary `!` and `-` (chainable), and parenthesized grouping. Literals are numbers, strings, `totoo`, `mali`, `wala`. A program is a sequence of expressions, each ending in `;`. Added the `--parse` flag, which prints each expression as a prefix tree, e.g. `(+ 2.0 (* 3.0 4.0))`; the REPL now prints parses. Syntax errors report line and expectation on stderr, exit 65, and recover at the next `;`. |
+| Lab 3 | Added tree-walk expression evaluation using the runtime `Value` enum, numeric arithmetic with type checks, string concatenation, numeric comparisons, strict equality, truthiness, and short-circuit logical operators. Added `--eval`, the REPL now prints computed values and returns to the prompt after reported errors. Runtime failures report line numbers on stderr and exit 70 in file mode. Expanded inline evaluator tests and fixed malformed decimal scanning that could cause a Rust panic. |
