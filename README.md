@@ -315,13 +315,7 @@ Message format:
 
 ## Testing conventions
 
-Lab 3 tests use inline annotations:
 
-- `// expect: <output>` checks evaluated output.
-- `// expect runtime error: <message>` checks a diagnostic and exit code 70.
-- `// expect error: <message>` checks rejection before execution and exit code 65.
-
-Error expectations contain the message without its line-number prefix. Each runtime-error test has one error case per file because evaluation stops at the first runtime failure.
 
 | Folder | Activity | Mode | Flag |
 |---|---|---|---|
@@ -331,6 +325,13 @@ Error expectations contain the message without its line-number prefix. Each runt
 | tests/lab4 | Context | inline | none |
 | tests/lab5 | Functions | inline | none |
 
+Lab 3 tests use inline annotations:
+
+- `// expect: <output>` checks evaluated output.
+- `// expect runtime error: <message>` checks a diagnostic and exit code 70.
+- `// expect error: <message>` checks rejection before execution and exit code 65.
+
+Error expectations contain the message without its line-number prefix. Each runtime-error test has one error case per file because evaluation stops at the first runtime failure.
 
 ```
 [specific tests]...
@@ -381,3 +382,4 @@ Output:
 |---|---|
 | Lab 1 | Initial lexical grammar: single- and two-character operators, single-line strings with `\n` `\"` `\\` escapes, integer and decimal literals, identifiers, 22 Tagalog keywords, `//` and nested `/* */` comments, `--tokenize` flag and REPL. |
 | Lab 2 | Expression grammar with seven precedence levels (`okaya`, `at`, equality, comparison, `+ -`, `* / %`, unary), all left-associative. Added the `%` operator, unary `!` and `-` (chainable), and parenthesized grouping. Literals are numbers, strings, `totoo`, `mali`, `wala`. A program is a sequence of expressions, each ending in `;`. Added the `--parse` flag, which prints each expression as a prefix tree, e.g. `(+ 2.0 (* 3.0 4.0))`; the REPL now prints parses. Syntax errors report line and expectation on stderr, exit 65, and recover at the next `;`. |
+| Lab 3 | Added tree-walk expression evaluation using the runtime `Value` enum, numeric arithmetic with type checks, string concatenation, numeric comparisons, strict equality, truthiness, and short-circuit logical operators. Added `--eval`, the REPL now prints computed values and returns to the prompt after reported errors. Runtime failures report line numbers on stderr and exit 70 in file mode. Expanded inline evaluator tests and fixed malformed decimal scanning that could cause a Rust panic. |
