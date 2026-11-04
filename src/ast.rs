@@ -1,9 +1,22 @@
 use crate::token::{Token, Value};
 
-/// Root of the tree: one entry per ';'-terminated expression, in file order.
+/// Root of the tree: statements in source order.
 #[derive(Debug, Clone)]
 pub struct Program {
-    pub expressions: Vec<Expr>,
+    pub statements: Vec<Stmt>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Stmt {
+    Expression(Expr),
+    Print(Expr),
+}
+
+pub fn print_statement(statement: &Stmt) -> String {
+    match statement {
+        Stmt::Expression(expr) => print(expr),
+        Stmt::Print(expr) => format!("(ipakita {})", print(expr)),
+    }
 }
 
 #[derive(Debug, Clone)]

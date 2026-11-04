@@ -75,8 +75,8 @@ fn run_parse(path: &str) -> ExitCode {
     let mut parser: Parser = Parser::new(tokens);
     match parser.parse_program() {
         Ok(program) => {
-            for expr in &program.expressions {
-                println!("{}", ast::print(expr));
+            for statement in &program.statements {
+                println!("{}", ast::print_statement(statement));
             }
             ExitCode::from(0)
         }

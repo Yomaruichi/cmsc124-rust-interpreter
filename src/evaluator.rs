@@ -1,6 +1,6 @@
 mod coercion;
 
-use crate::ast::{Expr, Program};
+use crate::ast::{Expr, Program, Stmt};
 use crate::token::{Token, TokenType, Value};
 use crate::evaluator::coercion::coerce_number;
  
@@ -28,7 +28,10 @@ pub fn report_runtime_error(err: &RuntimeError) {
 
 // main entry point: evaluate each expression and print its result
 pub fn interpret(program: &Program) -> Result<(), RuntimeError> {
-    for expr in &program.expressions {
+    for statement in &program.statements {
+        let expr = match statement {
+            Stmt::Expression(expr) | Stmt::Print(expr) => expr,
+        };
         let value = evaluate(expr)?;
         println!("{}", stringify(&value));
     }

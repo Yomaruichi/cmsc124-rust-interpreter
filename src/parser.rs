@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Program};
+use crate::ast::{Expr, Program, Stmt};
 use crate::token::{Token, TokenType, Value};
 
 pub struct Parser {
@@ -12,7 +12,7 @@ pub struct ParseError;
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, program: Program { expressions: Vec::new() }, current: 0, had_error: false }
+        Parser { tokens, program: Program { statements: Vec::new() }, current: 0, had_error: false }
     }
 
     // ---- six helpers, token-level equivalents of the scanner's ----
@@ -136,11 +136,11 @@ impl Parser {
         self.primary()
     }
 
-    // program → ( expression ";" )* EOF
+    // program → statement* EOF
     pub fn parse_program(&mut self) -> Result<&Program, ParseError> {
         while !self.is_at_end() {
-            match self.expression_statement() {
-                Ok(expr) => self.program.expressions.push(expr),
+            match self.statement() {
+                Ok(statement) => self.program.statements.push(statement),
                 Err(_) => self.synchronize(), // error already printed by Parser::error
             }
         }
@@ -151,10 +151,16 @@ impl Parser {
         }
     }
 
-    fn expression_statement(&mut self) -> Result<Expr, ParseError> {
+    fn statement(&mut self) -> Result<Stmt, ParseError> {
+        if self.match_token(&[TokenType::IPAKITA]) {
+            let expr = self.expression()?;
+            self.consume(TokenType::SEMICOLON, "Expect ';' after print statement.")?;
+            return Ok(Stmt::Print(expr));
+        }
+
         let expr = self.expression()?;
         self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
-        Ok(expr)
+        Ok(Stmt::Expression(expr))
     }
 
     // discard tokens through the next ';' so parsing resumes at a fresh expression
