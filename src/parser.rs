@@ -75,7 +75,20 @@ impl Parser {
     // ---- grammar rules, so far: expression -> factor -> unary -> primary ----
 
     pub fn expression(&mut self) -> Result<Expr, ParseError> {
-        self.logic_or()
+        self.assignment()
+    }
+
+    // Assignment has the lowest precedence and groups from the right.
+    fn assignment(&mut self) -> Result<Expr, ParseError> {
+        let expr = self.logic_or()?;
+        if self.match_token(&[TokenType::EQUAL]) {
+            let value = self.assignment()?;
+            if let Expr::Variable(name) = expr {
+                return Ok(Expr::Assign { name, value: Box::new(value) });
+            }
+            return Err(self.error("Invalid assignment target."));
+        }
+        Ok(expr)
     }
 
     // one left-associative level: operand ( operator operand )*
@@ -139,7 +152,7 @@ impl Parser {
     // program → statement* EOF
     pub fn parse_program(&mut self) -> Result<&Program, ParseError> {
         while !self.is_at_end() {
-            match self.statement() {
+            match self.declaration() {
                 Ok(statement) => self.program.statements.push(statement),
                 Err(_) => self.synchronize(), // error already printed by Parser::error
             }
@@ -151,16 +164,27 @@ impl Parser {
         }
     }
 
-    fn statement(&mut self) -> Result<Stmt, ParseError> {
-        if self.match_token(&[TokenType::IPAKITA]) {
-            let expr = self.expression()?;
-            self.consume(TokenType::SEMICOLON, "Expect ';' after print statement.")?;
-            return Ok(Stmt::Print(expr));
+    fn declaration(&mut self) -> Result<Stmt, ParseError> {
+        if self.match_token(&[TokenType::ITAKDA]) {
+            let name = self.consume(TokenType::IDENTIFIER, "Expect variable name.")?.clone();
+            let initializer = if self.match_token(&[TokenType::EQUAL]) {
+                Some(self.expression()?)
+            } else {
+                None
+            };
+            self.consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.")?;
+            return Ok(Stmt::Variable { name, initializer });
         }
 
+        let is_print = self.match_token(&[TokenType::IPAKITA]);
         let expr = self.expression()?;
-        self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
-        Ok(Stmt::Expression(expr))
+        if is_print {
+            self.consume(TokenType::SEMICOLON, "Expect ';' after print statement.")?;
+            Ok(Stmt::Print(expr))
+        } else {
+            self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
+            Ok(Stmt::Expression(expr))
+        }
     }
 
     // discard tokens through the next ';' so parsing resumes at a fresh expression
@@ -173,6 +197,10 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expr, ParseError> {
+        if self.match_token(&[TokenType::IDENTIFIER]) {
+            return Ok(Expr::Variable(self.previous().clone()));
+        }
+
         if self.match_token(&[TokenType::NUMBER, TokenType::STRING]) {
             // the scanner already built a typed Value on the token, so reuse it
             let value = self.previous().literal.clone().expect("literal token must carry a Value");

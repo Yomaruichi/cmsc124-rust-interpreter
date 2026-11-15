@@ -1,0 +1,8 @@
+itakda x = 10;
+ipakita x; // expect: 10
+x = x + 5;
+ipakita x; // expect: 15
+itakda y;
+ipakita y; // expect: nil
+itakda x = "changed";
+ipakita x; // expect: changed
