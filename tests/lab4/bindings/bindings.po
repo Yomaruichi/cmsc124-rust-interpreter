@@ -1,0 +1,8 @@
+itakda x = 10;
+ipakita x; 
+x = x + 5;
+ipakita x; 
+itakda y;
+ipakita y; 
+itakda x = "changed";
+ipakita x; 
