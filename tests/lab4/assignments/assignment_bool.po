@@ -1,0 +1,2 @@
+itakda msg = totoo;
+ipakita msg;
