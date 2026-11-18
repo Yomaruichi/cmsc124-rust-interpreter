@@ -29,8 +29,21 @@ pub fn report_runtime_error(err: &RuntimeError) {
 
 // File execution prints explicit output. REPL and --eval also echo expressions.
 pub fn interpret(program: &Program, environment: &mut Environment, echo: bool) -> Result<(), RuntimeError> {
-    for statement in &program.statements {
+    execute_statements(&program.statements, environment, echo)
+}
+
+fn execute_statements(statements: &[Stmt], environment: &mut Environment, echo: bool) -> Result<(), RuntimeError> {
+    for statement in statements {
         match statement {
+            Stmt::Block(statements) => {
+                let enclosing = std::mem::replace(environment, Environment::new());
+                *environment = Environment::enclosed(enclosing);
+                // Save the result before restoring so an error cannot skip scope exit.
+                let result = execute_statements(statements, environment, false);
+                let block = std::mem::replace(environment, Environment::new());
+                *environment = block.into_enclosing();
+                result?;
+            }
             Stmt::Variable { name, initializer } => {
                 let value = match initializer {
                     Some(expr) => evaluate(expr, environment)?,
@@ -210,4 +223,59 @@ fn evaluate_binary(left: &Expr, operator: &Token, right: &Expr, environment: &mu
 // The operator token preserves the source line when either value fails the shared type check.
 fn number_operands(operator: &Token, left: &Value, right: &Value) -> Result<(f64, f64), RuntimeError> {
     Ok((coerce_number(operator, left)?, coerce_number(operator, right)?))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::Parser;
+    use crate::scanner::Scanner;
+
+    #[test]
+    fn nested_runtime_error_restores_global_visibility_and_releases_block_bindings() {
+        let mut environment = Environment::new();
+        let mut scanner = Scanner::new_string(
+            "itakda x = 1; { itakda x = 2; { itakda local = 3; 1 / 0; } }"
+        );
+        let tokens = scanner.scan_tokens().clone();
+        let mut parser = Parser::new(tokens);
+        let program = parser.parse_program().ok().expect("valid syntax");
+
+        // A nested runtime error must unwind both block environments.
+        assert!(interpret(program, &mut environment, false).is_err());
+
+        // Evaluate another input using the same environment, as the REPL does.
+        let mut scanner = Scanner::new_string("x;");
+        let mut parser = Parser::new(scanner.scan_tokens().clone());
+        let program = parser.parse_program().ok().expect("valid syntax");
+        if let Stmt::Expression(expr) = &program.statements[0] {
+            assert!(matches!(evaluate(expr, &mut environment), Ok(Value::Number(1.0))));
+        } else {
+            panic!("expected expression statement");
+        }
+
+        let mut scanner = Scanner::new_string("local;");
+        let mut parser = Parser::new(scanner.scan_tokens().clone());
+        let program = parser.parse_program().ok().expect("valid syntax");
+        assert!(interpret(program, &mut environment, false).is_err());
+    }
+
+    #[test]
+    fn outer_assignment_survives_an_error_in_an_inner_scope() {
+        let mut environment = Environment::new();
+        let mut scanner = Scanner::new_string("itakda x = 1; { x = 9; 1 / 0; }");
+        let mut parser = Parser::new(scanner.scan_tokens().clone());
+        let program = parser.parse_program().ok().expect("valid syntax");
+
+        // Restoring the scope keeps assignments that already changed the outer binding.
+        assert!(interpret(program, &mut environment, false).is_err());
+        let mut scanner = Scanner::new_string("x;");
+        let mut parser = Parser::new(scanner.scan_tokens().clone());
+        let program = parser.parse_program().ok().expect("valid syntax");
+        if let Stmt::Expression(expr) = &program.statements[0] {
+            assert!(matches!(evaluate(expr, &mut environment), Ok(Value::Number(9.0))));
+        } else {
+            panic!("expected expression statement");
+        }
+    }
 }
