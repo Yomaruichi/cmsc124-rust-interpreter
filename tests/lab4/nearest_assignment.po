@@ -1,0 +1,7 @@
+itakda x = 1;
+{
+    itakda x = 2;
+    { x = 3; }
+    ipakita x; // expect: 3
+}
+ipakita x; // expect: 1
