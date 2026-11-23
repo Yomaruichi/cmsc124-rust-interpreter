@@ -1,0 +1,4 @@
+itakda mensahe = "hello";
+itakda Mensahe = "hi";
+ipakita mensahe; // expect: hello
+ipakita Mensahe; // expect: hi

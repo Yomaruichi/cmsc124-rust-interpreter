@@ -1,0 +1,4 @@
+// we expect nothing we just make sure that the identifier is ok
+itakda x = 1; // expect:
+itakda _x1 = 2; 
+itakda snake_case = "hi"; 
