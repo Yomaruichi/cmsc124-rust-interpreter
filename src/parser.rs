@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Program};
+use crate::ast::{Expr, Program, Stmt};
 use crate::token::{Token, TokenType, Value};
 
 pub struct Parser {
@@ -12,7 +12,7 @@ pub struct ParseError;
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, program: Program { expressions: Vec::new() }, current: 0, had_error: false }
+        Parser { tokens, program: Program { statements: Vec::new() }, current: 0, had_error: false }
     }
 
     // ---- six helpers, token-level equivalents of the scanner's ----
@@ -75,7 +75,20 @@ impl Parser {
     // ---- grammar rules, so far: expression -> factor -> unary -> primary ----
 
     pub fn expression(&mut self) -> Result<Expr, ParseError> {
-        self.logic_or()
+        self.assignment()
+    }
+
+    // Assignment has the lowest precedence and groups from the right.
+    fn assignment(&mut self) -> Result<Expr, ParseError> {
+        let expr = self.logic_or()?;
+        if self.match_token(&[TokenType::EQUAL]) {
+            let value = self.assignment()?;
+            if let Expr::Variable(name) = expr {
+                return Ok(Expr::Assign { name, value: Box::new(value) });
+            }
+            return Err(self.error("Invalid assignment target."));
+        }
+        Ok(expr)
     }
 
     // one left-associative level: operand ( operator operand )*
@@ -136,12 +149,12 @@ impl Parser {
         self.primary()
     }
 
-    // program → ( expression ";" )* EOF
+    // program → statement* EOF
     pub fn parse_program(&mut self) -> Result<&Program, ParseError> {
         while !self.is_at_end() {
-            match self.expression_statement() {
-                Ok(expr) => self.program.expressions.push(expr),
-                Err(_) => self.synchronize(), // error already printed by Parser::error
+            match self.declaration() {
+                Ok(statement) => self.program.statements.push(statement),
+                Err(_) => self.synchronize(false), // error already printed by Parser::error
             }
         }
         if self.had_error {
@@ -151,15 +164,51 @@ impl Parser {
         }
     }
 
-    fn expression_statement(&mut self) -> Result<Expr, ParseError> {
+    fn declaration(&mut self) -> Result<Stmt, ParseError> {
+        if self.match_token(&[TokenType::LCURLY]) {
+            let mut statements = Vec::new();
+            while !self.is_at_end() && !self.check(&TokenType::RCURLY) {
+                match self.declaration() {
+                    Ok(statement) => statements.push(statement),
+                    Err(_) => self.synchronize(true),
+                }
+            }
+            self.consume(TokenType::RCURLY, "Expect '}' after block.")?;
+            return Ok(Stmt::Block(statements));
+        }
+
+        if self.match_token(&[TokenType::ITAKDA]) {
+            let name = self.consume(TokenType::IDENTIFIER, "Expect variable name.")?.clone();
+            let initializer = if self.match_token(&[TokenType::EQUAL]) {
+                Some(self.expression()?)
+            } else {
+                None
+            };
+            self.consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.")?;
+            return Ok(Stmt::Variable { name, initializer });
+        }
+
+        let is_print = self.match_token(&[TokenType::IPAKITA]);
         let expr = self.expression()?;
-        self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
-        Ok(expr)
+        if is_print {
+            self.consume(TokenType::SEMICOLON, "Expect ';' after print statement.")?;
+            Ok(Stmt::Print(expr))
+        } else {
+            self.consume(TokenType::SEMICOLON, "Expect ';' after expression.")?;
+            Ok(Stmt::Expression(expr))
+        }
     }
 
-    // discard tokens through the next ';' so parsing resumes at a fresh expression
-    fn synchronize(&mut self) {
+    // Keep a block's closing delimiter for its owner; otherwise always make progress.
+    fn synchronize(&mut self, in_block: bool) {
         while !self.is_at_end() {
+            if in_block && self.check(&TokenType::RCURLY) {
+                return;
+            }
+            if self.check(&TokenType::ITAKDA) || self.check(&TokenType::IPAKITA)
+                || self.check(&TokenType::LCURLY) {
+                return;
+            }
             if self.advance().token_type == TokenType::SEMICOLON {
                 return;
             }
@@ -167,6 +216,10 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expr, ParseError> {
+        if self.match_token(&[TokenType::IDENTIFIER]) {
+            return Ok(Expr::Variable(self.previous().clone()));
+        }
+
         if self.match_token(&[TokenType::NUMBER, TokenType::STRING]) {
             // the scanner already built a typed Value on the token, so reuse it
             let value = self.previous().literal.clone().expect("literal token must carry a Value");

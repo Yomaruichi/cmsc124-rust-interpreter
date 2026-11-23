@@ -1,0 +1,2 @@
+ipakita 999;
+itakda x = 1 // expect error: Expect ';' after variable declaration.
