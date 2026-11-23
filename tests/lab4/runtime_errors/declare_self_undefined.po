@@ -1,0 +1,1 @@
+itakda x = x; // expect runtime error: Undefined variable 'x'.
