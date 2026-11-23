@@ -1,0 +1,3 @@
+itakda msg = "hello";
+itakda msg2 = "hi";
+ipakita msg+msg2; // expect: hellohi

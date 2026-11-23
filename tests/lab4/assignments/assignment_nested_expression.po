@@ -1,0 +1,2 @@
+itakda a;
+ipakita (a = 2) + 1; // expect: 3

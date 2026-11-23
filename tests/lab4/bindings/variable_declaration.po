@@ -1,0 +1,2 @@
+itakda x;
+ipakita x; // expect: nil

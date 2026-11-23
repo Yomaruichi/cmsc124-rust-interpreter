@@ -1,6 +1,5 @@
 {
   "ext": ".po",
   "mode": "inline",
-  "comment_prefix": "//",
-  "run_entrypoint": "./run"
+  "comment_prefix": "//"
 }

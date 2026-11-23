@@ -1,0 +1,7 @@
+itakda ipakita = "hello"; 
+// expect error: Expect variable name.
+// expect error: Expect expression.
+
+ipakita ipakita; 
+// expect error: Expect expression.
+// expect error: Expect expression.
