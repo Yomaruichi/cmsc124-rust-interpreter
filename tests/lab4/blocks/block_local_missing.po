@@ -1,0 +1,2 @@
+{ itakda local = 1; }
+ipakita local; // expect runtime error: Undefined variable 'local'.
