@@ -1,0 +1,14 @@
+itakda a;
+ipakita a; // expect: nil
+
+itakda a = 1;
+ipakita a; // expect: 1
+
+itakda a = "hi";
+ipakita a; // expect: hi
+
+itakda a = totoo;
+ipakita a; // expect: true
+
+itakda a = wala;
+ipakita a; // expect: nil

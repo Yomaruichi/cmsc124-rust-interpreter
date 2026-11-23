@@ -1,0 +1,3 @@
+itakda x = 5; 
+itakda x; 
+ipakita x; // expect: nil
