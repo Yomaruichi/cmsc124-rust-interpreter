@@ -10,11 +10,20 @@ pub struct Program {
 pub enum Stmt {
     Expression(Expr),
     Print(Expr),
+    Block(Vec<Stmt>),
     Variable { name: Token, initializer: Option<Expr> },
 }
 
 pub fn print_statement(statement: &Stmt) -> String {
     match statement {
+        Stmt::Block(statements) => {
+            let children: Vec<String> = statements.iter().map(print_statement).collect();
+            if children.is_empty() {
+                "(block)".to_string()
+            } else {
+                format!("(block {})", children.join(" "))
+            }
+        }
         Stmt::Expression(expr) => print(expr),
         Stmt::Print(expr) => format!("(ipakita {})", print(expr)),
         Stmt::Variable { name, initializer } => {

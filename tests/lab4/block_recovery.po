@@ -1,0 +1,6 @@
+ipakita 999;
+{
+    itakda = 1; // expect error: Expect variable name.
+    ipakita ; // expect error: Expect expression.
+}
+itakda = 2; // expect error: Expect variable name.

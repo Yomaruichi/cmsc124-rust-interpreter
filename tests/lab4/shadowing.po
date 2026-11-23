@@ -1,0 +1,6 @@
+itakda x = "outer";
+{
+    itakda x = "inner";
+    ipakita x; // expect: inner
+}
+ipakita x; // expect: outer

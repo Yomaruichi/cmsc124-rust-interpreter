@@ -154,7 +154,7 @@ impl Parser {
         while !self.is_at_end() {
             match self.declaration() {
                 Ok(statement) => self.program.statements.push(statement),
-                Err(_) => self.synchronize(), // error already printed by Parser::error
+                Err(_) => self.synchronize(false), // error already printed by Parser::error
             }
         }
         if self.had_error {
@@ -165,6 +165,18 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Stmt, ParseError> {
+        if self.match_token(&[TokenType::LCURLY]) {
+            let mut statements = Vec::new();
+            while !self.is_at_end() && !self.check(&TokenType::RCURLY) {
+                match self.declaration() {
+                    Ok(statement) => statements.push(statement),
+                    Err(_) => self.synchronize(true),
+                }
+            }
+            self.consume(TokenType::RCURLY, "Expect '}' after block.")?;
+            return Ok(Stmt::Block(statements));
+        }
+
         if self.match_token(&[TokenType::ITAKDA]) {
             let name = self.consume(TokenType::IDENTIFIER, "Expect variable name.")?.clone();
             let initializer = if self.match_token(&[TokenType::EQUAL]) {
@@ -187,9 +199,16 @@ impl Parser {
         }
     }
 
-    // discard tokens through the next ';' so parsing resumes at a fresh expression
-    fn synchronize(&mut self) {
+    // Keep a block's closing delimiter for its owner; otherwise always make progress.
+    fn synchronize(&mut self, in_block: bool) {
         while !self.is_at_end() {
+            if in_block && self.check(&TokenType::RCURLY) {
+                return;
+            }
+            if self.check(&TokenType::ITAKDA) || self.check(&TokenType::IPAKITA)
+                || self.check(&TokenType::LCURLY) {
+                return;
+            }
             if self.advance().token_type == TokenType::SEMICOLON {
                 return;
             }
