@@ -235,6 +235,7 @@ Arithmetic uses operator-specific coercion rather than a universal type hierarch
 | `+` | Two numbers, or a string paired with a non-nil value | Concatenates if either operand is a string; otherwise requires two numbers. |
 | `-`, `*`, `/`, `%` | Two numbers | Performs numeric arithmetic without coercion. |
 | Unary `-` | Number | Negates the number; rejects every other type. |
+| `=` | An identifier on the left, any value on the right | Stores the right value in the variable and returns that value. The variable must already be declared. |
 
 - Booleans are not numbers: numeric arithmetic and ordering reject them with a runtime error (exit 70). String concatenation can still print a boolean.
 - `wala` (nil) is rejected in all arithmetic, including string concatenation, with a runtime error (exit 70).
@@ -275,9 +276,9 @@ In the REPL, a reported error returns control to the prompt so another line can 
 ### Scope and bindings
 
 - Redeclaration in the same scope: [allowed or an error]
-- Uninitialized variable holds: [value]
+- Uninitialized variable holds: [`wala` (nil)]
 - Shadowing: [behavior]
-- Undefined name: [static error with exit 65, or runtime error with exit 70]
+- Undefined name: [runtime error with exit 70]
 
 ### Control flow and functions
 
@@ -334,7 +335,62 @@ Lab 3 tests use inline annotations:
 Error expectations contain the message without its line-number prefix. Each runtime-error test has one error case per file because evaluation stops at the first runtime failure.
 
 ```
-[specific tests]...
+```
+// Declaration and print
+itakda msg = "hello";
+ipakita msg; // expect: hello
+```
+
+```
+// Chained assignment is right-associative and returns the value
+itakda a = 0;
+itakda b = 0;
+ipakita a = b = 7; // expect: 7
+ipakita a + b;     // expect: 14
+```
+
+```
+// Reassignment, uninitialized variable, redeclaration with a new type
+itakda x = 10;
+ipakita x;            // expect: 10
+x = x + 5;
+ipakita x;            // expect: 15
+itakda y;
+ipakita y;            // expect: nil
+itakda x = "changed";
+ipakita x;            // expect: changed
+```
+
+```
+// Bare expression statements print nothing
+itakda x = 1;
+x = 2;
+x + 3;
+// expect nothing
+```
+
+```
+// Syntax errors (exit 65)
+1 + 2 = 3; // expect error: Invalid assignment target.
+```
+
+```
+itakda = 1; // expect error: Expect variable name.
+```
+
+```
+ipakita 999;
+itakda x = 1 // expect error: Expect ';' after variable declaration.
+```
+
+```
+// Runtime errors (exit 70): one per file
+missing = 1; // expect runtime error: Undefined variable 'missing'.
+```
+
+```
+ipakita missing; // expect runtime error: Undefined variable 'missing'.
+```
 ```
 
 Run locally with:
@@ -348,13 +404,36 @@ python3 run_tests.py tests/lab1
 ## Sample code
 
 ```
-[a short program]
+// Variables, assignment, and printing
+itakda x = 10;
+ipakita x;
+x = x + 5;
+ipakita x;
+
+itakda y;            // no initializer, so y is wala
+ipakita y;
+
+itakda x = "changed"; // redeclaration replaces x, even with a new type
+ipakita x;
+
+itakda a = 0;
+itakda b = 0;
+ipakita a = b = 7;   // assignment is an expression
+ipakita a + b;
+
+ipakita "ready: " + totoo;
 ```
 
 Output:
 
 ```
-[its output]
+10
+15
+nil
+changed
+7
+14
+ready: true
 ```
 
 ## Design rationale
@@ -365,6 +444,9 @@ Output:
 - Comments like `//` and `/* */` are borrowed from the C family because `/` already needs one character of lookahead for division. We made block comments nest, so commenting out code that already contains a block comment works.
 - Errors don't stop the scan. Every error prints to stderr, sets `had_error`, and returns from the helper that found it, so the main loop carries on and one run reports every problem. `main` decides the exit code only after the whole file is scanned. The REPL ignores `had_error` so a bad line can't end the session.
 - Token output format. `Token(type= X, lexeme= '...', literal= ..., line= N)`, one token per line. The lexeme is wrapped in single quotes so the empty EOF lexeme shows up as `''` and trailing whitespace can't hide.
+- Assignment is an expression and right-associative, matching the C family, so `a = b = 7` works and `ipakita a = b = 7;` has a meaningful value to print.
+- Undefined variables are runtime errors, not static errors. It keeps the language simple at this stage, since names are only looked up when the line actually runs, and it matches how the tests expect `missing = 1;` to fail with exit 70.
+- Redeclaring with `itakda` is allowed and an uninitialized variable is `wala`. This keeps experimentation friendly (especially in the REPL, where re-running a declaration shouldn't be an error).
 
 ## Known limitations
 
