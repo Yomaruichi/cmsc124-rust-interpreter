@@ -1,0 +1,5 @@
+itakda a;
+itakda b;
+a = 1;
+a = b = a + 1;
+ipakita a; // expect: 2
