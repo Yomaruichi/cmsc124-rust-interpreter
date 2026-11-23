@@ -1,2 +1,2 @@
 itakda msg = totoo;
-ipakita msg;
+ipakita msg; // expect: true

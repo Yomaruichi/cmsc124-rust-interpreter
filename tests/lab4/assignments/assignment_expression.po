@@ -1,4 +1,4 @@
 itakda a = 0;
 itakda b = 0;
-ipakita a = b = 7;
-ipakita a + b;
+ipakita a = b = 7; // expect: 7
+ipakita a + b; // expect: 14

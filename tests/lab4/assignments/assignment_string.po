@@ -1,2 +1,2 @@
 itakda msg = "hello";
-ipakita msg;
+ipakita msg; // expect: hello
