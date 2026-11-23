@@ -1,7 +1,5 @@
 {
   "ext": ".po",
-  "flag": "--eval",
-  "mode": "sidecar",
-  "comment_prefix": "//",
-  "run_entrypoint": "./run"
+  "mode": "inline",
+  "comment_prefix": "//"
 }
