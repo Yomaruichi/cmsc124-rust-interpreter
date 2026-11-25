@@ -8,6 +8,8 @@ pub struct Program {
 
 #[derive(Debug, Clone)]
 pub enum Stmt {
+    If { condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>> },
+    While { condition: Expr, body: Box<Stmt> },
     Expression(Expr),
     Print(Expr),
     Block(Vec<Stmt>),
@@ -16,6 +18,17 @@ pub enum Stmt {
 
 pub fn print_statement(statement: &Stmt) -> String {
     match statement {
+        Stmt::If { condition, then_branch, else_branch } => {
+            let branch = print_statement(then_branch);
+
+            match else_branch {
+                Some(other) => format!("(kung {} {} (kundi {}))", print(condition), branch, print_statement(other)),
+                None => format!("(kung {} {})", print(condition), branch),
+            }
+        }
+        Stmt::While { condition, body } => {
+            format!("(habang {} {})", print(condition), print_statement(body))
+        }
         Stmt::Block(statements) => {
             let children: Vec<String> = statements.iter().map(print_statement).collect();
             if children.is_empty() {

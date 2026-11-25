@@ -165,6 +165,14 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Stmt, ParseError> {
+        if self.match_token(&[TokenType::KUNG]) {
+            return self.if_statement();
+        }
+
+        if self.match_token(&[TokenType::HABANG]) {
+            return self.while_statement();
+        }
+
         if self.match_token(&[TokenType::LCURLY]) {
             let mut statements = Vec::new();
             while !self.is_at_end() && !self.check(&TokenType::RCURLY) {
@@ -199,6 +207,38 @@ impl Parser {
         }
     }
 
+    // Parse the inner branch first so kundi belongs to the nearest unmatched kung.
+    fn if_statement(&mut self) -> Result<Stmt, ParseError> {
+        self.consume(TokenType::LPAREN, "Expect '(' after 'kung'.")?;
+
+        let condition = self.expression()?;
+
+        self.consume(TokenType::RPAREN, "Expect ')' after condition.")?;
+
+        let then_branch = Box::new(self.declaration()?);
+
+        let else_branch = if self.match_token(&[TokenType::KUNDI]) {
+            Some(Box::new(self.declaration()?))
+        } else {
+            None
+        };
+
+        Ok(Stmt::If { condition, then_branch, else_branch })
+    }
+
+    // The condition is stored as a tree so each iteration can evaluate it again.
+    fn while_statement(&mut self) -> Result<Stmt, ParseError> {
+        self.consume(TokenType::LPAREN, "Expect '(' after 'habang'.")?;
+
+        let condition = self.expression()?;
+
+        self.consume(TokenType::RPAREN, "Expect ')' after condition.")?;
+
+        let body = Box::new(self.declaration()?);
+
+        Ok(Stmt::While { condition, body })
+    }
+
     // Keep a block's closing delimiter for its owner; otherwise always make progress.
     fn synchronize(&mut self, in_block: bool) {
         while !self.is_at_end() {
@@ -206,7 +246,8 @@ impl Parser {
                 return;
             }
             if self.check(&TokenType::ITAKDA) || self.check(&TokenType::IPAKITA)
-                || self.check(&TokenType::LCURLY) {
+                || self.check(&TokenType::LCURLY) || self.check(&TokenType::KUNG)
+                || self.check(&TokenType::HABANG) {
                 return;
             }
             if self.advance().token_type == TokenType::SEMICOLON {

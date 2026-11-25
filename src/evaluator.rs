@@ -35,6 +35,21 @@ pub fn interpret(program: &Program, environment: &mut Environment, echo: bool) -
 fn execute_statements(statements: &[Stmt], environment: &mut Environment, echo: bool) -> Result<(), RuntimeError> {
     for statement in statements {
         match statement {
+            Stmt::If { condition, then_branch, else_branch } => {
+                let value = evaluate(condition, environment)?;
+
+                if is_truthy(&value) {
+                    execute_statements(std::slice::from_ref(then_branch.as_ref()), environment, false)?;
+                } else if let Some(branch) = else_branch {
+                    execute_statements(std::slice::from_ref(branch.as_ref()), environment, false)?;
+                }
+            }
+            Stmt::While { condition, body } => {
+                // Recheck after the body so assignments can end the loop.
+                while is_truthy(&evaluate(condition, environment)?) {
+                    execute_statements(std::slice::from_ref(body.as_ref()), environment, false)?;
+                }
+            }
             Stmt::Block(statements) => {
                 let enclosing = std::mem::replace(environment, Environment::new());
                 *environment = Environment::enclosed(enclosing);
